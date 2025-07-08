@@ -1,5 +1,10 @@
-def application(environ, start_response):
-    status = '200 OK'
-    headers = [('Content-type', 'text/plain; charset=utf-8')]
-    start_response(status, headers)
-    return [b'ارتباط با لیارا برقرار شد!']
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route('/')
+def hello():
+    return 'سلام از عتبات! برنامه شما روی لیارا اجرا شده است.'
+
+if __name__ == '__main__':
+    app.run()
