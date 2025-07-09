@@ -1,15 +1,15 @@
 from flask import Flask, request
 import requests
-import os
 
 app = Flask(__name__)
 
-TOKEN = 'توکن بات بله را اینجا قرار بده'
+# توکن بات بله شما
+TOKEN = '6616020:CAwP1U9uX7ibGLXM17Cb9BztVy97pZUUXnDWvIjX'
 BALE_API_URL = f"https://tapi.bale.ai/bot{TOKEN}/sendMessage"
 
 @app.route('/', methods=['GET'])
 def home():
-    return 'ربات بله روی لیارا فعال است.'
+    return 'ربات بله روی رندر فعال است.'
 
 @app.route('/', methods=['POST'])
 def webhook():
@@ -25,3 +25,5 @@ def webhook():
         })
 
     return 'ok'
+
+# لازم نیست app.run در رندر باشه چون رندر خودش اجرا رو مدیریت می‌کند
