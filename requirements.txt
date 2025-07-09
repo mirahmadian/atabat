@@ -1,3 +1,6 @@
+pandas
+jdatetime
+openpyxl
 flask
 requests
 gunicorn
