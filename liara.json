@@ -1,8 +1,5 @@
 {
+  "platform": "python",
   "app": "atabat",
-  "port": 5000,
-  "build": {
-    "location": "iran"
-  },
-  "disks": []
+  "port": 8080
 }
