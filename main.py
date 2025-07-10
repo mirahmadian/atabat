@@ -39,7 +39,7 @@ def admin_index():
     conn = get_connection()
     assignments = conn.execute('SELECT * FROM rahnama ORDER BY id DESC').fetchall()
     conn.close()
-    return render_template('admin_layout.html', assignments=assignments) # یک فایل html جدید برای این می‌سازیم
+    return render_template('admin_index.html', assignments=assignments) # یک فایل html جدید برای این می‌سازیم
 
 @app.route('/admin/add', methods=('GET', 'POST'))
 def admin_add():
