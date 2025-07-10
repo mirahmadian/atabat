@@ -1,101 +1,128 @@
 from flask import Flask, request, jsonify
-import requests
 import sqlite3
+import requests
+import os
 
 app = Flask(__name__)
 
+# توکن بات بله
 TOKEN = "6616020:CAwP1U9uX7ibGLXM17Cb9BztVy97pZUUXnDWvIjX"
 BALE_API_URL = f"https://tapi.bale.ai/bot{TOKEN}/sendMessage"
 
-DB_PATH = "database.db"
+# مسیر صفحه اصلی
+@app.route('/')
+def home():
+    return "ربات بله فعال است."
 
-def send_message(chat_id, text, keyboard=None):
-    data = {
+# مسیر دریافت پیام‌ها از بات
+@app.route('/bot', methods=['POST'])
+def webhook():
+    try:
+        data = request.get_json()
+
+        # گرفتن اطلاعات کاربر و پیام
+        message = data.get("message", {})
+        text = message.get("text", "")
+        chat_id = message.get("chat", {}).get("id", "")
+
+        if not chat_id or not text:
+            return jsonify({"status": "no message"}), 200
+
+        if text == "/start":
+            welcome = (
+                "سلام! 👋\n"
+                "به بات ارزشیابی مدیران ثابت خوش آمدید.\n"
+                "این بات به شما کمک می‌کند تا پس از اقامت، مدیر ثابت هر هتل را ارزیابی کنید.\n\n"
+                "لطفاً کد ملی خود را وارد نمایید:"
+            )
+            send_message(chat_id, welcome)
+            return jsonify({"status": "ok"})
+
+        # بررسی کدملی وارد شده
+        if text.isdigit() and len(text) == 10:
+            user_info = get_user_info(text)
+            if user_info:
+                name = user_info['rahname_name']
+                hotel = user_info['hotel']
+                modir_name = user_info['modir_name']
+                exit_date = user_info['exit_date']
+
+                if is_allowed_to_rate(exit_date):
+                    msg = (
+                        f"جناب آقای {name}، خوش آمدید 🌟\n"
+                        f"لطفاً مدیر ثابت هتل {hotel}، جناب آقای {modir_name} را با دقت ارزیابی نمایید.\n"
+                        "آیا اطلاعات فوق صحیح است؟"
+                    )
+                    keyboard = {
+                        "keyboard": [
+                            [{"text": "✅ بله، صحیح است"}, {"text": "❌ خیر، اشتباه است"}]
+                        ],
+                        "resize_keyboard": True
+                    }
+                    send_message(chat_id, msg, keyboard)
+                else:
+                    send_message(chat_id, "⏳ هنوز مجاز به ثبت ارزشیابی نیستید. لطفاً پس از پایان اقامت اقدام فرمایید.")
+            else:
+                send_message(chat_id, "❌ کد ملی شما در سیستم یافت نشد.")
+        else:
+            send_message(chat_id, "لطفاً یک کد ملی معتبر ۱۰ رقمی وارد نمایید.")
+
+        return jsonify({"status": "ok"})
+
+    except Exception as e:
+        print("خطا:", e)
+        return jsonify({"status": "error", "message": str(e)})
+
+# تابع ارسال پیام به کاربر
+def send_message(chat_id, text, reply_markup=None):
+    payload = {
         "chat_id": chat_id,
         "text": text,
-        "parse_mode": "Markdown"
     }
-    if keyboard:
-        data["reply_markup"] = keyboard
-    resp = requests.post(BALE_API_URL, json=data)
-    return resp.json()
-
-def get_user_info_by_national_code(n_code):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT name, hotel, city, exit_date FROM managers INNER JOIN fixed_managers ON managers.id = fixed_managers.manager_id WHERE managers.national_code = ?", (n_code,))
-    result = cursor.fetchone()
-    conn.close()
-    if result:
-        return {
-            "name": result[0],
-            "hotel": result[1],
-            "city": result[2],
-            "exit_date": result[3]
-        }
-    return None
-
-@app.route("/", methods=["GET"])
-def home():
-    return "Bot is running."
-
-@app.route("/webhook", methods=["POST"])
-def webhook():
-    data = request.json
-    # بله فرستاده
-    message = data.get("message")
-    if not message:
-        return jsonify({"status": "no message"}), 200
-    
-    chat_id = message["chat"]["id"]
-    text = message.get("text", "").strip()
-
-    # وضعیت کاربر را در دیتابیس یا حافظه بررسی و مدیریت کن (برای سادگی اینجا فقط پاسخ اولیه)
-    if text == "/start":
-        welcome_text = (
-            "سلام!\n"
-            "هدف این بات: ارزشیابی مدیران ثابت توسط مدیران راهنما.\n"
-            "لطفا کد ملی خود را وارد کنید."
-        )
-        send_message(chat_id, welcome_text)
-        return jsonify({"status": "ok"}), 200
-
-    # فرض می‌کنیم متن ارسالی کد ملی است
-    user_info = get_user_info_by_national_code(text)
-    if user_info is None:
-        send_message(chat_id, "کد ملی یافت نشد. لطفا دوباره کد ملی خود را وارد کنید.")
-        return jsonify({"status": "ok"}), 200
-
-    # بررسی تاریخ خروج (بر اساس تاریخ امروز)
-    from datetime import datetime
-    today = datetime.now().date()
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
     try:
-        exit_date = datetime.strptime(user_info["exit_date"], "%Y-%m-%d").date()
-    except Exception:
-        send_message(chat_id, "خطا در پردازش تاریخ خروج. لطفا با پشتیبانی تماس بگیرید.")
-        return jsonify({"status": "ok"}), 200
+        response = requests.post(BALE_API_URL, json=payload)
+        print("پاسخ بله:", response.text)
+    except Exception as e:
+        print("خطا در ارسال پیام:", e)
 
-    if today < exit_date:
-        send_message(chat_id, f"امکان ارزشیابی تا تاریخ {exit_date} وجود ندارد. لطفا بعد از این تاریخ تلاش کنید.")
-        return jsonify({"status": "ok"}), 200
+# دریافت اطلاعات کاربر از دیتابیس SQLite
+def get_user_info(codemelli):
+    try:
+        conn = sqlite3.connect('atabat.db')
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT rahname_name, hotel, modir_name, exit_date 
+            FROM rahnamah_info 
+            WHERE codemelli = ?
+        """, (codemelli,))
+        row = cursor.fetchone()
+        conn.close()
 
-    # پیام تایید اطلاعات
-    confirm_text = (
-        f"جناب آقای {user_info['name']}،\n"
-        f"لطفا ارزشیابی مدیر ثابت هتل {user_info['hotel']} در شهر {user_info['city']} را با دقت انجام دهید.\n"
-        "آیا اطلاعات صحیح است؟"
-    )
-    keyboard = {
-        "inline_keyboard": [
-            [
-                {"text": "بله، صحیح است", "callback_data": "confirm_yes"},
-                {"text": "خیر، اصلاح شود", "callback_data": "confirm_no"}
-            ]
-        ]
-    }
-    send_message(chat_id, confirm_text, keyboard)
-    
-    return jsonify({"status": "ok"}), 200
+        if row:
+            return {
+                "rahname_name": row[0],
+                "hotel": row[1],
+                "modir_name": row[2],
+                "exit_date": row[3]
+            }
+        return None
+    except Exception as e:
+        print("خطا در اتصال به دیتابیس:", e)
+        return None
 
-if __name__ == "__main__":
-    app.run(port=10000)
+# بررسی اینکه آیا مجاز به ارزشیابی هست یا نه (بعد از تاریخ خروج)
+from datetime import datetime
+def is_allowed_to_rate(exit_date_str):
+    try:
+        today = datetime.today().date()
+        exit_date = datetime.strptime(exit_date_str, "%Y-%m-%d").date()
+        return today >= exit_date
+    except Exception as e:
+        print("خطا در پردازش تاریخ:", e)
+        return False
+
+# اجرای برنامه
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
