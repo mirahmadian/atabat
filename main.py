@@ -1,128 +1,78 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import sqlite3
-import requests
-import os
 
 app = Flask(__name__)
 
-# توکن بات بله
-TOKEN = "6616020:CAwP1U9uX7ibGLXM17Cb9BztVy97pZUUXnDWvIjX"
-BALE_API_URL = f"https://tapi.bale.ai/bot{TOKEN}/sendMessage"
+DB_NAME = "atabat.db"
 
-# مسیر صفحه اصلی
-@app.route('/')
+# تابع کمکی برای اتصال به دیتابیس و اجرای کوئری
+def query_db(query, args=(), one=False):
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+    cur.execute(query, args)
+    rv = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return (rv[0] if rv else None) if one else rv
+
+# صفحه اصلی ربات (مثلا برای تست)
+@app.route("/", methods=["GET"])
 def home():
-    return "ربات بله فعال است."
+    return "ربات بله روی رندر فعال است."
 
-# مسیر دریافت پیام‌ها از بات
-@app.route('/bot', methods=['POST'])
-def webhook():
-    try:
-        data = request.get_json()
+# دریافت پیام از بات بله
+@app.route("/bot", methods=["POST"])
+def bot():
+    data = request.json
 
-        # گرفتن اطلاعات کاربر و پیام
-        message = data.get("message", {})
-        text = message.get("text", "")
-        chat_id = message.get("chat", {}).get("id", "")
+    # نمونه ساده: دریافت پیام متنی از کاربر و پاسخ دادن
+    message = data.get("message", {})
+    text = message.get("text", "")
+    chat_id = message.get("chat", {}).get("id")
 
-        if not chat_id or not text:
-            return jsonify({"status": "no message"}), 200
-
-        if text == "/start":
-            welcome = (
-                "سلام! 👋\n"
-                "به بات ارزشیابی مدیران ثابت خوش آمدید.\n"
-                "این بات به شما کمک می‌کند تا پس از اقامت، مدیر ثابت هر هتل را ارزیابی کنید.\n\n"
-                "لطفاً کد ملی خود را وارد نمایید:"
-            )
-            send_message(chat_id, welcome)
-            return jsonify({"status": "ok"})
-
-        # بررسی کدملی وارد شده
-        if text.isdigit() and len(text) == 10:
-            user_info = get_user_info(text)
-            if user_info:
-                name = user_info['rahname_name']
-                hotel = user_info['hotel']
-                modir_name = user_info['modir_name']
-                exit_date = user_info['exit_date']
-
-                if is_allowed_to_rate(exit_date):
-                    msg = (
-                        f"جناب آقای {name}، خوش آمدید 🌟\n"
-                        f"لطفاً مدیر ثابت هتل {hotel}، جناب آقای {modir_name} را با دقت ارزیابی نمایید.\n"
-                        "آیا اطلاعات فوق صحیح است؟"
-                    )
-                    keyboard = {
-                        "keyboard": [
-                            [{"text": "✅ بله، صحیح است"}, {"text": "❌ خیر، اشتباه است"}]
-                        ],
-                        "resize_keyboard": True
-                    }
-                    send_message(chat_id, msg, keyboard)
-                else:
-                    send_message(chat_id, "⏳ هنوز مجاز به ثبت ارزشیابی نیستید. لطفاً پس از پایان اقامت اقدام فرمایید.")
-            else:
-                send_message(chat_id, "❌ کد ملی شما در سیستم یافت نشد.")
-        else:
-            send_message(chat_id, "لطفاً یک کد ملی معتبر ۱۰ رقمی وارد نمایید.")
-
+    if text == "/start":
+        reply = ("سلام! 👋\n"
+                 "به بات ارزشیابی مدیران ثابت خوش آمدید.\n"
+                 "لطفاً کد ملی خود را وارد نمایید:")
+        send_message(chat_id, reply)
         return jsonify({"status": "ok"})
 
-    except Exception as e:
-        print("خطا:", e)
-        return jsonify({"status": "error", "message": str(e)})
+    # اینجا می تونید منطق بات رو اضافه کنید...
 
-# تابع ارسال پیام به کاربر
-def send_message(chat_id, text, reply_markup=None):
+    send_message(chat_id, "پیغام شما دریافت شد: " + text)
+    return jsonify({"status": "ok"})
+
+# تابع ارسال پیام به بات بله
+def send_message(chat_id, text):
+    import requests
+    TOKEN = "6616020:CAwP1U9uX7ibGLXM17Cb9BztVy97pZUUXnDWvIjX"
+    BALE_API_URL = f"https://tapi.bale.ai/bot{TOKEN}/sendMessage"
     payload = {
         "chat_id": chat_id,
-        "text": text,
+        "text": text
     }
-    if reply_markup:
-        payload["reply_markup"] = reply_markup
-    try:
-        response = requests.post(BALE_API_URL, json=payload)
-        print("پاسخ بله:", response.text)
-    except Exception as e:
-        print("خطا در ارسال پیام:", e)
+    requests.post(BALE_API_URL, json=payload)
 
-# دریافت اطلاعات کاربر از دیتابیس SQLite
-def get_user_info(codemelli):
-    try:
-        conn = sqlite3.connect('atabat.db')
+# مسیر فرم اضافه کردن مدیر راهنما
+@app.route("/add_rahnama", methods=["GET", "POST"])
+def add_rahnama():
+    if request.method == "POST":
+        codemeli = request.form["codemeli"]
+        name = request.form["name"]
+        family = request.form["family"]
+        date_azmoon = request.form["date_azmoon"]
+
+        conn = sqlite3.connect(DB_NAME)
         cursor = conn.cursor()
-        cursor.execute("""
-            SELECT rahname_name, hotel, modir_name, exit_date 
-            FROM rahnamah_info 
-            WHERE codemelli = ?
-        """, (codemelli,))
-        row = cursor.fetchone()
+        cursor.execute(
+            "INSERT INTO rahnama (codemeli, name, family, date_azmoon) VALUES (?, ?, ?, ?)",
+            (codemeli, name, family, date_azmoon))
+        conn.commit()
         conn.close()
 
-        if row:
-            return {
-                "rahname_name": row[0],
-                "hotel": row[1],
-                "modir_name": row[2],
-                "exit_date": row[3]
-            }
-        return None
-    except Exception as e:
-        print("خطا در اتصال به دیتابیس:", e)
-        return None
+        return "✅ اطلاعات با موفقیت ثبت شد."
 
-# بررسی اینکه آیا مجاز به ارزشیابی هست یا نه (بعد از تاریخ خروج)
-from datetime import datetime
-def is_allowed_to_rate(exit_date_str):
-    try:
-        today = datetime.today().date()
-        exit_date = datetime.strptime(exit_date_str, "%Y-%m-%d").date()
-        return today >= exit_date
-    except Exception as e:
-        print("خطا در پردازش تاریخ:", e)
-        return False
+    return render_template("add_rahnama.html")
 
-# اجرای برنامه
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
