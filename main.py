@@ -102,9 +102,15 @@ def bot_webhook():
             exit_date_jalali = jdatetime.date.fromgregorian(date=exit_date_gregorian)
             exit_date_shamsi_str = exit_date_jalali.strftime("%Y/%m/%d")
 
-            if today_gregorian < exit_date_gregorian:
-                reply = f"دوره ارزشیابی شما برای این ماموریت هنوز آغاز نشده است. شما از تاریخ {exit_date_shamsi_str} می‌توانید ارزشیابی را انجام دهید."
-                return send_message(chat_id, reply)
+            # کد صحیح و نهایی
+if today_gregorian < exit_date_gregorian:
+    # --- این دو خط برای تبدیل تاریخ اضافه شده‌اند ---
+    exit_date_jalali = jdatetime.date.fromgregorian(date=exit_date_gregorian)
+    exit_date_shamsi_str = exit_date_jalali.strftime("%Y/%m/%d")
+    # ---------------------------------------------
+
+    reply = f"دوره ارزشیابی شما برای این ماموریت هنوز آغاز نشده است. شما از تاریخ {exit_date_shamsi_str} می‌توانید ارزشیابی را انجام دهید."
+    return send_message(chat_id, reply)
             
             if today_gregorian > deadline:
                 reply = "مهلت یک ماهه شما برای ثبت ارزشیابی این ماموریت به پایان رسیده است."
