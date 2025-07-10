@@ -7,7 +7,7 @@ import datetime
 # --- تنظیمات اولیه ---
 app = Flask(__name__)
 DB_PATH = "atabat_sample.db"
-BOT_TOKEN = "YOUR_BOT_TOKEN" # <<< توکن بات خود را اینجا قرار دهید
+BOT_TOKEN = "6616020:CAwP1U9uX7ibGLXM17Cb9BztVy97pZUUXnDWvIjX" # <<< توکن بات خود را اینجا قرار دهید
 
 # ... (بقیه کد شما تا این بخش بدون تغییر باقی می‌ماند) ...
 user_states = {}
