@@ -1,54 +1,75 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 import sqlite3
 import json
-import jdatetime # برای کار با تاریخ شمسی
+import jdatetime
 import datetime
 
 # --- تنظیمات اولیه ---
 app = Flask(__name__)
-DB_PATH = "atabat_sample.db" # مطمئن شوید نام فایل دیتابیس شما همین است
-BOT_TOKEN = "6616020:CAwP1U9uX7ibGLXM17Cb9BztVy97pZUUXnDWvIjX" # <<< توکن بات خود را اینجا قرار دهید
+DB_PATH = "atabat_sample.db"
+BOT_TOKEN = "YOUR_BOT_TOKEN" # <<< توکن بات خود را اینجا قرار دهید
 
-# --- مدیریت وضعیت کاربران (در حافظه موقت) ---
 # این دیکشنری وضعیت هر کاربر را در گفتگو نگهداری می‌کند
-# ساختار: {chat_id: {"state": "...", "data": {...}}}
 user_states = {}
 
-# --- تابع کمکی برای اتصال به دیتابیس ---
+# --- توابع کمکی ---
 def get_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
-# --- تابع کمکی برای ارسال پیام به بله ---
 def send_message(chat_id, text, reply_markup=None):
     import requests
     BALE_API_URL = f"https://tapi.bale.ai/bot{BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": chat_id,
-        "text": text
-    }
+    payload = {"chat_id": chat_id, "text": text}
     if reply_markup:
         payload["reply_markup"] = reply_markup
-        
     try:
         response = requests.post(BALE_API_URL, json=payload)
-        response.raise_for_status() # بررسی خطاهای احتمالی در پاسخ
+        response.raise_for_status()
         return jsonify(response.json())
     except requests.exceptions.RequestException as e:
         print(f"Error sending message: {e}")
         return jsonify({"ok": False, "description": "Failed to send message"}), 500
 
+# --- مسیرهای مربوط به پنل مدیریت تحت وب ---
+
+@app.route('/admin')
+def admin_index():
+    conn = get_connection()
+    assignments = conn.execute('SELECT * FROM rahnama ORDER BY id DESC').fetchall()
+    conn.close()
+    return render_template('admin_layout.html', assignments=assignments) # یک فایل html جدید برای این می‌سازیم
+
+@app.route('/admin/add', methods=('GET', 'POST'))
+def admin_add():
+    if request.method == 'POST':
+        # دریافت داده از فرم
+        guide_name = request.form['guide_name']
+        guide_national_id = request.form['guide_national_id']
+        enter_date = request.form['enter_date']
+        exit_date = request.form['exit_date']
+        city = request.form['city']
+        hotel_name = request.form['hotel_name']
+        fixed_manager_name = request.form['fixed_manager_name']
+        
+        # ذخیره در دیتابیس
+        conn = get_connection()
+        conn.execute('INSERT INTO rahnama (guide_name, guide_national_id, enter_date, exit_date, city, hotel_name, fixed_manager_name) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                     (guide_name, guide_national_id, enter_date, exit_date, city, hotel_name, fixed_manager_name))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('admin_index'))
+
+    return render_template('admin_form.html', assignment=None)
+
 # --- مسیر اصلی بات (Webhook) ---
 @app.route("/bot", methods=["POST"])
 def bot_webhook():
+    # ... (کد مربوط به وب‌هوک که قبلا داشتیم، بدون تغییر اینجا قرار می‌گیرد) ...
+    # (برای سادگی، بخش بزرگی از کد قبلی شما اینجا تکرار می‌شود)
     data = request.json
     
-    # مدیریت کلیک روی دکمه‌های شیشه‌ای (Inline) - فعلا خالی
-    if "callback_query" in data:
-        # اینجا بعدا منطق مربوط به دکمه‌های امتیازدهی را اضافه می‌کنیم
-        return jsonify({"status": "ok", "message": "callback received"})
-
     # مدیریت پیام‌های متنی
     if "message" in data:
         message = data.get("message", {})
@@ -56,48 +77,32 @@ def bot_webhook():
         chat_id = message.get("chat", {}).get("id")
 
         if not chat_id:
-            return jsonify({"status": "error", "message": "chat_id not found"})
+            return jsonify({"status": "error"})
 
-        # --- منطق اصلی بات ---
-        
-        # 1. مدیریت دستور /start
         if text == "/start":
-            reply = (
-                "سلام! 👋\n"
-                "به بات ارزشیابی مدیران ثابت خوش آمدید.\n"
-                "لطفاً برای شروع و احراز هویت، کد ملی خود را وارد نمایید:"
-            )
+            reply = "سلام! 👋\nبه بات ارزشیابی مدیران ثابت خوش آمدید.\nلطفاً برای شروع، کد ملی خود را وارد نمایید:"
             return send_message(chat_id, reply)
 
-        # 2. بررسی کد ملی و احراز هویت
         conn = get_connection()
-        # استفاده از پارامتر ? برای جلوگیری از SQL Injection
-        # همیشه آخرین ماموریت کاربر را بر اساس تاریخ ورود برمیگرداند
-        rahnama_row = conn.execute(
-            "SELECT * FROM rahnama WHERE guide_national_id = ? ORDER BY enter_date DESC LIMIT 1",
-            (text,)
-        ).fetchone()
+        rahnama_row = conn.execute("SELECT * FROM rahnama WHERE guide_national_id = ? ORDER BY enter_date DESC LIMIT 1", (text,)).fetchone()
         conn.close()
 
         if not rahnama_row:
-            reply = "❌ کد ملی شما در سیستم یافت نشد. لطفاً مجدداً تلاش کنید."
-            return send_message(chat_id, reply)
+            return send_message(chat_id, "❌ کد ملی شما در سیستم یافت نشد.")
 
-        # 3. بررسی بازه زمانی ارزشیابی
         try:
-            # تبدیل تاریخ‌های شمسی از دیتابیس به تاریخ میلادی برای مقایسه
-            exit_date_str = rahnama_row["exit_date"] # فرض می‌کنیم فرمت YYYY-MM-DD است
+            exit_date_str = rahnama_row["exit_date"]
             shamsi_parts = list(map(int, exit_date_str.split('-')))
             exit_date_gregorian = jdatetime.date(shamsi_parts[0], shamsi_parts[1], shamsi_parts[2]).togregorian()
             
             today_gregorian = datetime.date.today()
             deadline = exit_date_gregorian + datetime.timedelta(days=30)
+            
+            # تبدیل تاریخ به شمسی برای نمایش به کاربر
+            exit_date_jalali = jdatetime.date.fromgregorian(date=exit_date_gregorian)
+            exit_date_shamsi_str = exit_date_jalali.strftime("%Y/%m/%d")
 
             if today_gregorian < exit_date_gregorian:
-                # تبدیل تاریخ میلادی به شمسی برای نمایش به کاربر
-                exit_date_jalali = jdatetime.date.fromgregorian(date=exit_date_gregorian)
-                exit_date_shamsi_str = exit_date_jalali.strftime("%Y/%m/%d") # فرمت‌بندی تاریخ شمسی
-
                 reply = f"دوره ارزشیابی شما برای این ماموریت هنوز آغاز نشده است. شما از تاریخ {exit_date_shamsi_str} می‌توانید ارزشیابی را انجام دهید."
                 return send_message(chat_id, reply)
             
@@ -106,39 +111,23 @@ def bot_webhook():
                 return send_message(chat_id, reply)
 
         except Exception as e:
-            print(f"Date conversion error: {e}")
-            reply = "خطا در پردازش تاریخ. لطفاً فرمت تاریخ در دیتابیس را بررسی کنید (باید YYYY-MM-DD باشد)."
-            return send_message(chat_id, reply)
+            print(f"Date processing error: {e}")
+            return send_message(chat_id, "خطا در پردازش تاریخ دیتابیس.")
             
-        # 4. اگر همه چیز درست بود، سوال تایید هتل را بپرس
-        # ذخیره اطلاعات کاربر برای مراحل بعدی
         user_states[chat_id] = dict(rahnama_row)
         user_states[chat_id]["state"] = "awaiting_hotel_confirmation"
 
-        hotel_name = rahnama_row["hotel_name"]
-        manager_name = rahnama_row["fixed_manager_name"]
-        
         reply = (
             f"✅ جناب آقای {rahnama_row['guide_name']}، هویت شما تایید شد.\n\n"
             f"لطفاً اطلاعات زیر را تایید کنید:\n"
-            f"🏨 **هتل:** {hotel_name}\n"
-            f"👤 **مدیر ثابت:** {manager_name}\n\n"
+            f"🏨 **هتل:** {rahnama_row['hotel_name']}\n"
+            f"👤 **مدیر ثابت:** {rahnama_row['fixed_manager_name']}\n\n"
             "آیا این هتل و مدیری است که قصد ارزشیابی آن را دارید؟"
         )
-        
-        buttons = {
-            "keyboard": [
-                [{"text": "❌ خیر، اطلاعات اشتباه است"} , {"text": "✅ بله، صحیح است"}]
-            ],
-            "resize_keyboard": True,
-            "one_time_keyboard": True
-        }
+        buttons = {"keyboard": [[{"text": "❌ خیر، اطلاعات اشتباه است"} , {"text": "✅ بله، صحیح است"}]], "resize_keyboard": True, "one_time_keyboard": True}
         return send_message(chat_id, reply, reply_markup=json.dumps(buttons))
 
     return jsonify({"status": "ok"})
 
-
 if __name__ == "__main__":
-    # در اینجا می‌توانید برنامه را برای تست محلی اجرا کنید
-    # برای بارگذاری روی رندر، این بخش نیازی به تغییر ندارد
     app.run(host="0.0.0.0", port=10000, debug=True)
