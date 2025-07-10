@@ -1,0 +1,38 @@
+{% extends 'admin_layout.html' %}
+
+{% block content %}
+  <a href="{{ url_for('admin_add') }}" class="btn">افزودن ماموریت جدید</a>
+  <br><br>
+  <table>
+    <thead>
+      <tr>
+        <th>نام مدیر راهنما</th>
+        <th>کد ملی</th>
+        <th>هتل</th>
+        <th>مدیر ثابت</th>
+        <th>تاریخ ورود</th>
+        <th>تاریخ خروج</th>
+        <th>عملیات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for assignment in assignments %}
+        <tr>
+          <td>{{ assignment['guide_name'] }}</td>
+          <td>{{ assignment['guide_national_id'] }}</td>
+          <td>{{ assignment['hotel_name'] }}</td>
+          <td>{{ assignment['fixed_manager_name'] }}</td>
+          <td>{{ assignment['enter_date'] }}</td>
+          <td>{{ assignment['exit_date'] }}</td>
+          <td>
+            ویرایش
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="7">هیچ ماموریتی یافت نشد.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
