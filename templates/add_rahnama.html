@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <title>افزودن مدیر راهنما</title>
+</head>
+<body>
+  <h2>فرم ثبت مدیر راهنما</h2>
+  <form action="/add" method="post">
+    <label>نام:</label><br>
+    <input type="text" name="first_name" required><br><br>
+
+    <label>نام خانوادگی:</label><br>
+    <input type="text" name="last_name" required><br><br>
+
+    <label>کد ملی:</label><br>
+    <input type="text" name="national_id" required><br><br>
+
+    <label>تاریخ اعزام (yyyy-mm-dd):</label><br>
+    <input type="text" name="departure_date" required><br><br>
+
+    <label>شهر:</label><br>
+    <input type="text" name="city" required><br><br>
+
+    <label>نام هتل:</label><br>
+    <input type="text" name="hotel" required><br><br>
+
+    <label>تاریخ خروج از شهر (yyyy-mm-dd):</label><br>
+    <input type="text" name="exit_date" required><br><br>
+
+    <input type="submit" value="ثبت اطلاعات">
+  </form>
+</body>
+</html>
