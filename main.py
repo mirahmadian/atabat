@@ -1,118 +1,101 @@
-import telebot
-from flask import Flask, request
+from flask import Flask, request, jsonify
+import requests
 import sqlite3
-from datetime import datetime
 
-API_TOKEN = 'توکن_ربات_تو_اینجا_بگذار'
-bot = telebot.TeleBot(API_TOKEN)
 app = Flask(__name__)
 
-DB_PATH = "atabat.db"  # فایل دیتابیس SQLite شما
+TOKEN = "6616020:CAwP1U9uX7ibGLXM17Cb9BztVy97pZUUXnDWvIjX"
+BALE_API_URL = f"https://tapi.bale.ai/bot{TOKEN}/sendMessage"
 
-def get_db_connection():
+DB_PATH = "database.db"
+
+def send_message(chat_id, text, keyboard=None):
+    data = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": "Markdown"
+    }
+    if keyboard:
+        data["reply_markup"] = keyboard
+    resp = requests.post(BALE_API_URL, json=data)
+    return resp.json()
+
+def get_user_info_by_national_code(n_code):
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-# نگه داشتن حالت هر کاربر (مثلا منتظر کد ملی، منتظر تایید و ...)
-user_states = {}
-
-WELCOME_TEXT = """
-سلام!  
-هدف این ربات، ارزشیابی مدیران ثابت توسط مدیران راهنماست.  
-لطفا ابتدا کد ملی خود را وارد کنید:
-"""
-
-def check_can_evaluate(departure_date_str, today=None):
-    # بررسی اینکه تاریخ امروز >= تاریخ خروج از شهر باشد تا اجازه ارزیابی بدهد
-    if today is None:
-        today = datetime.now().date()
-    try:
-        departure_date = datetime.strptime(departure_date_str, "%Y-%m-%d").date()
-        return today >= departure_date
-    except Exception as e:
-        return False
-
-@app.route('/' + API_TOKEN, methods=['POST'])
-def webhook():
-    json_str = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_str)
-    bot.process_new_updates([update])
-    return '', 200
-
-@app.route('/')
-def index():
-    return "ربات فعال است.", 200
-
-@bot.message_handler(commands=['start'])
-def start_message(message):
-    user_states[message.chat.id] = "waiting_for_national_code"
-    bot.send_message(message.chat.id, WELCOME_TEXT)
-
-@bot.message_handler(func=lambda message: user_states.get(message.chat.id) == "waiting_for_national_code")
-def process_national_code(message):
-    national_code = message.text.strip()
-    # اعتبارسنجی ساده کد ملی: حداقل 8 رقم باشد (شما می توانید دقیق‌تر کنید)
-    if not national_code.isdigit() or len(national_code) < 8:
-        bot.send_message(message.chat.id, "کد ملی نامعتبر است. لطفا مجدداً وارد کنید.")
-        return
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-    # کوئری دریافت آخرین اعزام مدیر راهنما با این کد ملی
-    cur.execute("""
-        SELECT mrm.name AS manager_name, mrm.national_code AS manager_ncode,
-               at.departure_date, at.city, at.hotel, fixedm.name AS fixed_manager_name
-        FROM manager_rahna mrm
-        JOIN assignments at ON mrm.national_code = at.manager_ncode
-        JOIN manager_sabet fixedm ON fixedm.national_code = at.fixed_manager_ncode
-        WHERE mrm.national_code = ?
-        ORDER BY at.departure_date DESC
-        LIMIT 1
-    """, (national_code,))
-    row = cur.fetchone()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, hotel, city, exit_date FROM managers INNER JOIN fixed_managers ON managers.id = fixed_managers.manager_id WHERE managers.national_code = ?", (n_code,))
+    result = cursor.fetchone()
     conn.close()
+    if result:
+        return {
+            "name": result[0],
+            "hotel": result[1],
+            "city": result[2],
+            "exit_date": result[3]
+        }
+    return None
 
-    if not row:
-        bot.send_message(message.chat.id, "اطلاعات شما یافت نشد. لطفا کد ملی صحیح وارد کنید یا با مدیر سیستم تماس بگیرید.")
-        return
+@app.route("/", methods=["GET"])
+def home():
+    return "Bot is running."
 
-    # بررسی امکان ارزیابی بر اساس تاریخ خروج (ما از departure_date استفاده کردیم، اگر خروج دارید می تونید اصلاح کنید)
-    can_evaluate = check_can_evaluate(row["departure_date"])
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    data = request.json
+    # بله فرستاده
+    message = data.get("message")
+    if not message:
+        return jsonify({"status": "no message"}), 200
+    
+    chat_id = message["chat"]["id"]
+    text = message.get("text", "").strip()
 
-    if not can_evaluate:
-        bot.send_message(message.chat.id, f"جناب آقای {row['manager_name']} عزیز، هنوز امکان ارزشیابی وجود ندارد. لطفا بعد از پایان اقامت اقدام کنید.")
-        return
+    # وضعیت کاربر را در دیتابیس یا حافظه بررسی و مدیریت کن (برای سادگی اینجا فقط پاسخ اولیه)
+    if text == "/start":
+        welcome_text = (
+            "سلام!\n"
+            "هدف این بات: ارزشیابی مدیران ثابت توسط مدیران راهنما.\n"
+            "لطفا کد ملی خود را وارد کنید."
+        )
+        send_message(chat_id, welcome_text)
+        return jsonify({"status": "ok"}), 200
 
-    user_states[message.chat.id] = "waiting_for_confirmation"
-    # پیام خوش آمد + اطلاعات هتل و مدیر ثابت + دکمه تایید
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    keyboard.add(telebot.types.InlineKeyboardButton("تایید اطلاعات درست است", callback_data="confirm_yes"))
-    keyboard.add(telebot.types.InlineKeyboardButton("اطلاعات اشتباه است", callback_data="confirm_no"))
+    # فرض می‌کنیم متن ارسالی کد ملی است
+    user_info = get_user_info_by_national_code(text)
+    if user_info is None:
+        send_message(chat_id, "کد ملی یافت نشد. لطفا دوباره کد ملی خود را وارد کنید.")
+        return jsonify({"status": "ok"}), 200
 
-    msg = (f"جناب آقای {row['manager_name']}،\n"
-           f"لطفا ارزشیابی مدیر ثابت هتل {row['hotel']}، جناب آقای {row['fixed_manager_name']} را با دقت تکمیل نمایید.\n"
-           f"آیا اطلاعات فوق درست است؟")
-    bot.send_message(message.chat.id, msg, reply_markup=keyboard)
+    # بررسی تاریخ خروج (بر اساس تاریخ امروز)
+    from datetime import datetime
+    today = datetime.now().date()
+    try:
+        exit_date = datetime.strptime(user_info["exit_date"], "%Y-%m-%d").date()
+    except Exception:
+        send_message(chat_id, "خطا در پردازش تاریخ خروج. لطفا با پشتیبانی تماس بگیرید.")
+        return jsonify({"status": "ok"}), 200
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_query(call):
-    if call.data == "confirm_yes":
-        bot.answer_callback_query(call.id, "شما تایید کردید.")
-        bot.send_message(call.message.chat.id, "خوب، حالا می‌توانید ارزشیابی را شروع کنید (این قسمت را شما کامل می‌کنید).")
-        # اینجا می‌توانید ادامه کد ارزیابی را بنویسید و user_states را به حالت بعدی ببرید
-        user_states[call.message.chat.id] = "evaluating"
-    elif call.data == "confirm_no":
-        bot.answer_callback_query(call.id, "شما اطلاعات را اشتباه اعلام کردید.")
-        bot.send_message(call.message.chat.id, "لطفا نام هتل صحیح را وارد نمایید:")
-        user_states[call.message.chat.id] = "waiting_for_correct_hotel"
+    if today < exit_date:
+        send_message(chat_id, f"امکان ارزشیابی تا تاریخ {exit_date} وجود ندارد. لطفا بعد از این تاریخ تلاش کنید.")
+        return jsonify({"status": "ok"}), 200
 
-@bot.message_handler(func=lambda message: user_states.get(message.chat.id) == "waiting_for_correct_hotel")
-def get_correct_hotel(message):
-    correct_hotel = message.text.strip()
-    # اینجا می‌توانید ذخیره تغییر هتل یا اعلام به سیستم اصلی را اضافه کنید
-    bot.send_message(message.chat.id, f"ممنون، هتل به {correct_hotel} تغییر کرد. اکنون می‌توانید ارزشیابی را شروع کنید.")
-    user_states[message.chat.id] = "evaluating"
+    # پیام تایید اطلاعات
+    confirm_text = (
+        f"جناب آقای {user_info['name']}،\n"
+        f"لطفا ارزشیابی مدیر ثابت هتل {user_info['hotel']} در شهر {user_info['city']} را با دقت انجام دهید.\n"
+        "آیا اطلاعات صحیح است؟"
+    )
+    keyboard = {
+        "inline_keyboard": [
+            [
+                {"text": "بله، صحیح است", "callback_data": "confirm_yes"},
+                {"text": "خیر، اصلاح شود", "callback_data": "confirm_no"}
+            ]
+        ]
+    }
+    send_message(chat_id, confirm_text, keyboard)
+    
+    return jsonify({"status": "ok"}), 200
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+if __name__ == "__main__":
+    app.run(port=10000)
