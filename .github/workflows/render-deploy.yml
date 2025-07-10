@@ -8,12 +8,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Deploy to Render
-        uses: render-examples/deploy-to-render@v1
-        with:
-          api_key: ${{ secrets.RENDER_API_KEY }}
-          service_id: "your-render-service-id"
+      - name: Trigger Render Deploy Hook
+        run: |
+          curl -X POST https://api.render.com/deploy/srv-d1neglripnbc73aiikn0?key=${{ secrets.RENDER_API_KEY }}
+
