@@ -94,7 +94,11 @@ def bot_webhook():
             deadline = exit_date_gregorian + datetime.timedelta(days=30)
 
             if today_gregorian < exit_date_gregorian:
-                reply = f"دوره ارزشیابی شما برای این ماموریت هنوز آغاز نشده است. شما از تاریخ {exit_date_str} می‌توانید ارزشیابی را انجام دهید."
+                # تبدیل تاریخ میلادی به شمسی برای نمایش به کاربر
+                exit_date_jalali = jdatetime.date.fromgregorian(date=exit_date_gregorian)
+                exit_date_shamsi_str = exit_date_jalali.strftime("%Y/%m/%d") # فرمت‌بندی تاریخ شمسی
+
+                reply = f"دوره ارزشیابی شما برای این ماموریت هنوز آغاز نشده است. شما از تاریخ {exit_date_shamsi_str} می‌توانید ارزشیابی را انجام دهید."
                 return send_message(chat_id, reply)
             
             if today_gregorian > deadline:
