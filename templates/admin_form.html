@@ -1,3 +1,28 @@
 {% extends 'admin_layout.html' %}
 {% block content %}
-  <h2>{{
+  <h2>{{ 'ویرایش' if assignment else 'افزودن' }} ماموریت</h2>
+  <form method="post">
+    <label for="guide_name">نام مدیر راهنما:</label>
+    <input type="text" name="guide_name" id="guide_name" value="{{ assignment.guide_name if assignment else '' }}" required>
+
+    <label for="guide_national_id">کد ملی مدیر راهنما:</label>
+    <input type="text" name="guide_national_id" id="guide_national_id" value="{{ assignment.guide_national_id if assignment else '' }}" required>
+
+    <label for="enter_date">تاریخ ورود (شمسی YYYY-MM-DD):</label>
+    <input type="text" name="enter_date" id="enter_date" value="{{ assignment.enter_date if assignment else '' }}" required>
+
+    <label for="exit_date">تاریخ خروج (شمسی YYYY-MM-DD):</label>
+    <input type="text" name="exit_date" id="exit_date" value="{{ assignment.exit_date if assignment else '' }}" required>
+
+    <label for="city">شهر:</label>
+    <input type="text" name="city" id="city" value="{{ assignment.city if assignment else '' }}" required>
+
+    <label for="hotel_name">نام هتل:</label>
+    <input type="text" name="hotel_name" id="hotel_name" value="{{ assignment.hotel_name if assignment else '' }}" required>
+
+    <label for="fixed_manager_name">نام مدیر ثابت:</label>
+    <input type="text" name="fixed_manager_name" id="fixed_manager_name" value="{{ assignment.fixed_manager_name if assignment else '' }}" required>
+
+    <input type="submit" value="ذخیره" class="btn">
+  </form>
+{% endblock %}
