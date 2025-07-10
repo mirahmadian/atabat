@@ -40,20 +40,18 @@
 {% endblock %}
 
 {% block scripts %}
-  <!-- Persian Date Picker CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
-  
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   
-  <!-- Persian Date Picker JavaScript -->
-  <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-date.min.js"></script>
-  <script src="https://unpkg.com/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+  <!-- Persian Web Toolkit DatePicker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
   
   <script>
     $(document).ready(function() {
       // تنظیمات تقویم برای تاریخ ورود
-      $("#enter_date").pDatepicker({
+      $("#enter_date").persianDatepicker({
         format: 'YYYY-MM-DD',
         autoClose: true,
         initialValue: true,
@@ -99,9 +97,6 @@
             text: {
               fa: 'تایید'
             }
-          },
-          calendarSwitch: {
-            enabled: false
           }
         },
         onSelect: function(unix) {
@@ -110,7 +105,7 @@
       });
 
       // تنظیمات تقویم برای تاریخ خروج
-      $("#exit_date").pDatepicker({
+      $("#exit_date").persianDatepicker({
         format: 'YYYY-MM-DD',
         autoClose: true,
         initialValue: true,
@@ -156,9 +151,6 @@
             text: {
               fa: 'تایید'
             }
-          },
-          calendarSwitch: {
-            enabled: false
           }
         },
         onSelect: function(unix) {
