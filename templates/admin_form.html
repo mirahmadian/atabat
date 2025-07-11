@@ -14,11 +14,11 @@
 
     <div class="mb-3">
       <label for="enter_date" class="form-label">تاریخ ورود (شمسی):</label>
-      <input type="text" name="enter_date" id="enter_date" class="form-control" value="{{ assignment['enter_date'] if assignment else '' }}" required autocomplete="off" readonly>
+      <input type="text" name="enter_date" id="enter_date" class="form-control" value="{{ assignment['enter_date'] if assignment else '' }}" required autocomplete="off">
     </div>
     <div class="mb-3">
       <label for="exit_date" class="form-label">تاریخ خروج (شمسی):</label>
-      <input type="text" name="exit_date" id="exit_date" class="form-control" value="{{ assignment['exit_date'] if assignment else '' }}" required autocomplete="off" readonly>
+      <input type="text" name="exit_date" id="exit_date" class="form-control" value="{{ assignment['exit_date'] if assignment else '' }}" required autocomplete="off">
     </div>
     
     <div class="mb-3">
@@ -39,124 +39,16 @@
   </form>
 {% endblock %}
 
+
 {% block scripts %}
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  
-  <!-- Persian Web Toolkit DatePicker -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/@kamadatepicker/kamadatepicker/dist/kamadatepicker.min.css">
+  <script src="https://unpkg.com/@kamadatepicker/kamadatepicker/dist/kamadatepicker.min.js"></script>
   
   <script>
-    $(document).ready(function() {
-      // تنظیمات تقویم برای تاریخ ورود
-      $("#enter_date").persianDatepicker({
-        format: 'YYYY-MM-DD',
-        autoClose: true,
-        initialValue: true,
-        inline: false,
-        observer: true,
-        altField: '#enter_date',
-        altFormat: 'YYYY-MM-DD',
-        timePicker: {
-          enabled: false
-        },
-        dayPicker: {
-          enabled: true
-        },
-        monthPicker: {
-          enabled: true
-        },
-        yearPicker: {
-          enabled: true
-        },
-        navigator: {
-          enabled: true,
-          scroll: {
-            enabled: true
-          },
-          text: {
-            btnNextText: '‹',
-            btnPrevText: '›'
-          }
-        },
-        toolbox: {
-          enabled: true,
-          calendarSwitch: {
-            enabled: false
-          },
-          todayButton: {
-            enabled: true,
-            text: {
-              fa: 'امروز'
-            }
-          },
-          submitButton: {
-            enabled: true,
-            text: {
-              fa: 'تایید'
-            }
-          }
-        },
-        onSelect: function(unix) {
-          console.log('تاریخ ورود انتخاب شد:', this.model.formatted);
-        }
+      document.addEventListener("DOMContentLoaded", function() {
+          // این کد فقط بعد از بارگذاری کامل صفحه اجرا می‌شود
+          kamaDatepicker('enter_date', { format: "YYYY-MM-DD", buttonsColor: "blue", forceFarsiDigits: true });
+          kamaDatepicker('exit_date', { format: "YYYY-MM-DD", buttonsColor: "blue", forceFarsiDigits: true });
       });
-
-      // تنظیمات تقویم برای تاریخ خروج
-      $("#exit_date").persianDatepicker({
-        format: 'YYYY-MM-DD',
-        autoClose: true,
-        initialValue: true,
-        inline: false,
-        observer: true,
-        altField: '#exit_date',
-        altFormat: 'YYYY-MM-DD',
-        timePicker: {
-          enabled: false
-        },
-        dayPicker: {
-          enabled: true
-        },
-        monthPicker: {
-          enabled: true
-        },
-        yearPicker: {
-          enabled: true
-        },
-        navigator: {
-          enabled: true,
-          scroll: {
-            enabled: true
-          },
-          text: {
-            btnNextText: '‹',
-            btnPrevText: '›'
-          }
-        },
-        toolbox: {
-          enabled: true,
-          calendarSwitch: {
-            enabled: false
-          },
-          todayButton: {
-            enabled: true,
-            text: {
-              fa: 'امروز'
-            }
-          },
-          submitButton: {
-            enabled: true,
-            text: {
-              fa: 'تایید'
-            }
-          }
-        },
-        onSelect: function(unix) {
-          console.log('تاریخ خروج انتخاب شد:', this.model.formatted);
-        }
-      });
-    });
   </script>
 {% endblock %}
