@@ -3,59 +3,119 @@
 {% block head %}
     <!-- بارگذاری Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- بارگذاری Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <!-- بارگذاری Persian Datepicker CSS -->
     <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet" crossorigin="anonymous">
+    <style>
+        .form-label {
+            font-weight: 500;
+        }
+        .input-group-text {
+            background: #f8f9fa;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,.15);
+        }
+        .card {
+            border-radius: 1.2rem;
+        }
+        .card-header {
+            border-radius: 1.2rem 1.2rem 0 0;
+        }
+        .divider {
+            border-bottom: 1px solid #e9ecef;
+            margin: 1.5rem 0;
+        }
+        .btn-success {
+            font-size: 1.1rem;
+            padding: 0.7rem 2.5rem;
+        }
+        .btn-secondary {
+            font-size: 1.1rem;
+            padding: 0.7rem 2rem;
+        }
+        .input-group .form-control {
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        .input-group .input-group-text {
+            border-radius: 0.5rem 0 0 0.5rem;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-4" style="max-width: 700px;">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
+<div class="container my-5" style="max-width: 700px;">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white d-flex align-items-center gap-2">
+            <i class="bi bi-journal-plus fs-2 me-2"></i>
             <h3 class="mb-0">{{ 'ویرایش ماموریت' if assignment else 'افزودن ماموریت جدید' }}</h3>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
             <form method="post" novalidate>
-                <div class="mb-3">
+                <div class="mb-4">
                     <label for="guide_name" class="form-label">نام مدیر راهنما:</label>
-                    <input type="text" name="guide_name" id="guide_name" class="form-control" value="{{ assignment['guide_name'] if assignment else '' }}" required>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        <input type="text" name="guide_name" id="guide_name" class="form-control" value="{{ assignment['guide_name'] if assignment else '' }}" required placeholder="مثلاً: علی رضایی">
+                    </div>
                 </div>
-                <div class="mb-3">
+                <div class="mb-4">
                     <label for="guide_national_id" class="form-label">کد ملی مدیر راهنما:</label>
-                    <input type="text" name="guide_national_id" id="guide_national_id" class="form-control" value="{{ assignment['guide_national_id'] if assignment else '' }}" required>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-credit-card-2-front"></i></span>
+                        <input type="text" name="guide_national_id" id="guide_national_id" class="form-control" value="{{ assignment['guide_national_id'] if assignment else '' }}" required placeholder="مثلاً: 1234567890">
+                    </div>
                 </div>
-
-                <div class="mb-3">
+                <div class="divider"></div>
+                <div class="mb-4">
                     <label class="form-label">بازه تاریخی ماموریت:</label>
                     <div class="row g-2">
                         <div class="col">
-                            <input type="text" id="enter_date_display" class="form-control" placeholder="تاریخ ورود" autocomplete="off" required>
-                            <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment['enter_date'] if assignment else '' }}">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar-date"></i></span>
+                                <input type="text" id="enter_date_display" class="form-control" placeholder="تاریخ ورود" autocomplete="off" required>
+                                <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment['enter_date'] if assignment else '' }}">
+                            </div>
                         </div>
                         <div class="col">
-                            <input type="text" id="exit_date_display" class="form-control" placeholder="تاریخ خروج" autocomplete="off" required>
-                            <input type="hidden" name="exit_date" id="exit_date" value="{{ assignment['exit_date'] if assignment else '' }}">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-calendar-date"></i></span>
+                                <input type="text" id="exit_date_display" class="form-control" placeholder="تاریخ خروج" autocomplete="off" required>
+                                <input type="hidden" name="exit_date" id="exit_date" value="{{ assignment['exit_date'] if assignment else '' }}">
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="mb-3">
+                <div class="mb-4">
                     <label for="city" class="form-label">شهر:</label>
-                    <input type="text" name="city" id="city" class="form-control" value="{{ assignment['city'] if assignment else '' }}" required>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                        <input type="text" name="city" id="city" class="form-control" value="{{ assignment['city'] if assignment else '' }}" required placeholder="مثلاً: مشهد">
+                    </div>
                 </div>
-
-                <div class="mb-3">
+                <div class="mb-4">
                     <label for="hotel_name" class="form-label">نام هتل:</label>
-                    <input type="text" name="hotel_name" id="hotel_name" class="form-control" value="{{ assignment['hotel_name'] if assignment else '' }}" required>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-building"></i></span>
+                        <input type="text" name="hotel_name" id="hotel_name" class="form-control" value="{{ assignment['hotel_name'] if assignment else '' }}" required placeholder="مثلاً: هتل قصر">
+                    </div>
                 </div>
-
-                <div class="mb-3">
+                <div class="mb-4">
                     <label for="fixed_manager_name" class="form-label">نام مدیر ثابت:</label>
-                    <input type="text" name="fixed_manager_name" id="fixed_manager_name" class="form-control" value="{{ assignment['fixed_manager_name'] if assignment else '' }}" required>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
+                        <input type="text" name="fixed_manager_name" id="fixed_manager_name" class="form-control" value="{{ assignment['fixed_manager_name'] if assignment else '' }}" required placeholder="مثلاً: محمد محمدی">
+                    </div>
                 </div>
-
-                <div class="d-flex justify-content-center mt-4">
-                    <button type="submit" class="btn btn-success px-5">💾 ذخیره</button>
-                    <a href="{{ url_for('admin_index') }}" class="btn btn-secondary ms-3 px-4">انصراف</a>
+                <div class="d-flex justify-content-center mt-5 gap-3">
+                    <button type="submit" class="btn btn-success px-5 d-flex align-items-center gap-2">
+                        <i class="bi bi-save"></i> ذخیره
+                    </button>
+                    <a href="{{ url_for('admin_index') }}" class="btn btn-secondary px-4 d-flex align-items-center gap-2">
+                        <i class="bi bi-x-circle"></i> انصراف
+                    </a>
                 </div>
             </form>
         </div>
@@ -70,14 +130,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     <!-- بارگذاری Persian Datepicker JS -->
     <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js" crossorigin="anonymous"></script>
-
     <script>
     $(document).ready(function() {
-        // مقدار اولیه تاریخ ها (اگر وجود داشته باشد)
         let initialEnterDate = "{{ assignment['enter_date'] if assignment else '' }}";
         let initialExitDate = "{{ assignment['exit_date'] if assignment else '' }}";
-
-        // تنظیم تقویم شمسی برای تاریخ ورود
         $("#enter_date_display").persianDatepicker({
             format: 'YYYY/MM/DD',
             altField: '#enter_date',
@@ -86,7 +142,6 @@
             autoClose: true,
             observer: true,
             onSelect: function(unix) {
-                // اگر تاریخ خروج کوچکتر از تاریخ ورود شد، تاریخ خروج را پاک کن
                 let enterDate = $("#enter_date").val();
                 let exitDate = $("#exit_date").val();
                 if (exitDate && exitDate < enterDate) {
@@ -95,8 +150,6 @@
                 }
             }
         });
-
-        // تنظیم تقویم شمسی برای تاریخ خروج
         $("#exit_date_display").persianDatepicker({
             format: 'YYYY/MM/DD',
             altField: '#exit_date',
@@ -104,7 +157,7 @@
             initialValueType: 'persian',
             autoClose: true,
             observer: true,
-            minDate: new Date(), // تاریخ خروج نمی‌تواند قبل از امروز باشد
+            minDate: new Date(),
             onSelect: function(unix) {
                 let enterDate = $("#enter_date").val();
                 let exitDate = $("#exit_date").val();
@@ -115,8 +168,6 @@
                 }
             }
         });
-
-        // اگر تاریخ اولیه دارید در ورودی‌ها نمایش داده شود
         if(initialEnterDate) {
             $("#enter_date_display").val(initialEnterDate);
         }
