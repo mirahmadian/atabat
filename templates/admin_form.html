@@ -11,7 +11,6 @@
       <label for="guide_national_id" class="form-label">کد ملی مدیر راهنما:</label>
       <input type="text" name="guide_national_id" id="guide_national_id" class="form-control" value="{{ assignment['guide_national_id'] if assignment else '' }}" required>
     </div>
-
     <div class="mb-3">
       <label for="enter_date" class="form-label">تاریخ ورود (شمسی):</label>
       <input type="text" name="enter_date" id="enter_date" class="form-control" value="{{ assignment['enter_date'] if assignment else '' }}" required autocomplete="off">
@@ -20,7 +19,6 @@
       <label for="exit_date" class="form-label">تاریخ خروج (شمسی):</label>
       <input type="text" name="exit_date" id="exit_date" class="form-control" value="{{ assignment['exit_date'] if assignment else '' }}" required autocomplete="off">
     </div>
-    
     <div class="mb-3">
       <label for="city" class="form-label">شهر:</label>
       <input type="text" name="city" id="city" class="form-control" value="{{ assignment['city'] if assignment else '' }}" required>
@@ -41,14 +39,11 @@
 
 
 {% block scripts %}
-  <link rel="stylesheet" href="https://unpkg.com/@kamadatepicker/kamadatepicker/dist/kamadatepicker.min.css">
   <script src="https://unpkg.com/@kamadatepicker/kamadatepicker/dist/kamadatepicker.min.js"></script>
   
   <script>
-      document.addEventListener("DOMContentLoaded", function() {
-          // این کد فقط بعد از بارگذاری کامل صفحه اجرا می‌شود
-          kamaDatepicker('enter_date', { format: "YYYY-MM-DD", buttonsColor: "blue", forceFarsiDigits: true });
-          kamaDatepicker('exit_date', { format: "YYYY-MM-DD", buttonsColor: "blue", forceFarsiDigits: true });
-      });
+      // چون اسکریپت در انتهای صفحه است، دیگر نیازی به wrapper نیست
+      kamaDatepicker('enter_date', { format: "YYYY-MM-DD", buttonsColor: "blue", forceFarsiDigits: true });
+      kamaDatepicker('exit_date', { format: "YYYY-MM-DD", buttonsColor: "blue", forceFarsiDigits: true });
   </script>
 {% endblock %}
