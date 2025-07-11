@@ -1,107 +1,251 @@
 {% extends 'admin_layout.html' %}
 
 {% block content %}
-  <h2 class="mb-4 text-center">{{ 'ویرایش ماموریت' if assignment else 'افزودن ماموریت جدید' }}</h2>
-  <form method="post">
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label for="guide_name" class="form-label">نام مدیر راهنما:</label>
-            <input type="text" name="guide_name" id="guide_name" class="form-control" value="{{ assignment['guide_name'] if assignment else '' }}" required>
+<div class="card">
+    <div class="card-header">
+        <h2>{{ 'ویرایش ماموریت' if assignment else 'افزودن ماموریت جدید' }}</h2>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <div class="form-group">
+                <label for="guide_name" class="form-label">نام مدیر راهنما:</label>
+                <input type="text" name="guide_name" id="guide_name" class="form-control" value="{{ assignment['guide_name'] if assignment else '' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="guide_national_id" class="form-label">کد ملی مدیر راهنما:</label>
+                <input type="text" name="guide_national_id" id="guide_national_id" class="form-control" value="{{ assignment['guide_national_id'] if assignment else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">بازه تاریخی ماموریت (ورود و خروج):</label>
+                <div class="date-input-wrapper">
+                    <input type="text" id="daterange-display" class="form-control text-center" placeholder="برای انتخاب تاریخ کلیک کنید" readonly>
+                </div>
+            </div>
+
+            <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment['enter_date'] if assignment else '' }}">
+            <input type="hidden" name="exit_date" id="exit_date" value="{{ assignment['exit_date'] if assignment else '' }}">
+            
+            <div class="form-group">
+              <label for="city" class="form-label">شهر:</label>
+              <input type="text" name="city" id="city" class="form-control" value="{{ assignment['city'] if assignment else '' }}" required>
+            </div>
+            <div class="form-group">
+              <label for="hotel_name" class="form-label">نام هتل:</label>
+              <input type="text" name="hotel_name" id="hotel_name" class="form-control" value="{{ assignment['hotel_name'] if assignment else '' }}" required>
+            </div>
+            <div class="form-group">
+              <label for="fixed_manager_name" class="form-label">نام مدیر ثابت:</label>
+              <input type="text" name="fixed_manager_name" id="fixed_manager_name" class="form-control" value="{{ assignment['fixed_manager_name'] if assignment else '' }}" required>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-success">💾 ذخیره</button>
+                <a href="{{ url_for('admin_index') }}" class="btn btn-secondary ms-3">انصراف</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="persian-calendar" id="persianCalendar">
+    <div class="calendar-container">
+        <div class="calendar-month" id="calendar1">
+            <div class="calendar-header">
+                <button type="button" class="nav-btn" id="prevMonth">▶</button>
+                <span id="monthYear1"></span>
+                <button type="button" class="nav-btn" id="nextMonth">◀</button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid1"></div>
         </div>
-        <div class="col-md-6 mb-3">
-            <label for="guide_national_id" class="form-label">کد ملی مدیر راهنما:</label>
-            <input type="text" name="guide_national_id" id="guide_national_id" class="form-control" value="{{ assignment['guide_national_id'] if assignment else '' }}" required>
+        <div class="calendar-month" id="calendar2">
+            <div class="calendar-header">
+                <span id="monthYear2"></span>
+            </div>
+            <div class="calendar-grid" id="calendarGrid2"></div>
         </div>
     </div>
-    <div class="mb-3">
-        <label for="daterange" class="form-label">بازه تاریخی ماموریت (ورود و خروج):</label>
-        <input type="text" id="daterange" class="form-control text-center" autocomplete="off" style="cursor: pointer;">
+    <div class="calendar-footer">
+        <button type="button" class="btn btn-success" id="applyBtn">تایید</button>
+        <button type="button" class="btn btn-secondary" id="cancelBtn">انصراف</button>
     </div>
-    <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment['enter_date'] if assignment else '' }}">
-    <input type="hidden" name="exit_date" id="exit_date" value="{{ assignment['exit_date'] if assignment else '' }}">
-    
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <label for="city" class="form-label">شهر:</label>
-            <input type="text" name="city" id="city" class="form-control" value="{{ assignment['city'] if assignment else '' }}" required>
-        </div>
-        <div class="col-md-4 mb-3">
-            <label for="hotel_name" class="form-label">نام هتل:</label>
-            <input type="text" name="hotel_name" id="hotel_name" class="form-control" value="{{ assignment['hotel_name'] if assignment else '' }}" required>
-        </div>
-        <div class="col-md-4 mb-3">
-            <label for="fixed_manager_name" class="form-label">نام مدیر ثابت:</label>
-            <input type="text" name="fixed_manager_name" id="fixed_manager_name" class="form-control" value="{{ assignment['fixed_manager_name'] if assignment else '' }}" required>
-        </div>
-    </div>
-    
-    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
-        <button type="submit" class="btn btn-primary btn-lg px-5">ذخیره</button>
-        <a href="{{ url_for('admin_index') }}" class="btn btn-secondary btn-lg px-4">انصراف</a>
-    </div>
-  </form>
+</div>
 {% endblock %}
 
 
 {% block scripts %}
-  <script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.9.6/dist/moment-jalaali.min.js"></script>
-  
-  <script>
-    $(function() {
-        // فعال‌سازی کامل تقویم فارسی
-        moment.loadPersian({usePersianDigits: true, dialect: 'persian-modern'});
+<style>
+.form-group{margin-bottom:20px}.form-label{display:block;font-weight:600;color:#333;margin-bottom:8px;font-size:14px}.form-control{width:100%;border-radius:15px;border:2px solid #e0e0e0;padding:12px 20px;font-size:16px;transition:all .3s ease;background:white;font-family:'Vazirmatn',sans-serif}.form-control:focus{border-color:#667eea;outline:none;box-shadow:0 0 0 3px rgba(102,126,234,.1);transform:translateY(-2px)}.btn{border-radius:15px;padding:12px 30px;font-weight:600;transition:all .3s ease;border:none;cursor:pointer;font-size:16px;font-family:'Vazirmatn',sans-serif;text-decoration:none;display:inline-block;text-align:center}.btn-success{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.btn-success:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(102,126,234,.3)}.btn-secondary{background:#6c757d;color:white}.btn-secondary:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(108,117,125,.3);background:#5a6268}.ms-3{margin-right:15px}.mt-4{margin-top:1.5rem}.text-center{text-align:center}.date-input-wrapper{position:relative}.date-input-wrapper::after{content:'📅';position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:18px}.persian-calendar{display:none;position:absolute;top:100%;left:0;right:0;z-index:1000;background:white;border-radius:15px;box-shadow:0 20px 40px rgba(0,0,0,.15);border:1px solid #e0e0e0;overflow:hidden;margin-top:5px}.persian-calendar.active{display:block}.calendar-container{display:flex;width:100%}.calendar-month{flex:1;min-width:300px}.calendar-header{padding:15px;text-align:center;font-weight:600;display:flex;align-items:center;justify-content:space-between}.nav-btn{background:none;border:none;color:#555;font-size:18px;cursor:pointer;padding:8px 12px;border-radius:50%;transition:all .3s ease}.nav-btn:hover{background:rgba(0,0,0,.1)}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#f0f0f0;padding:10px}.calendar-day-header{background:#f8f9fa;padding:10px;text-align:center;font-weight:600;font-size:14px;color:#666}.calendar-day{background:white;padding:10px;text-align:center;cursor:pointer;transition:all .3s ease;font-size:14px;border:none;min-height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px}.calendar-day:hover{background:rgba(102,126,234,.1);transform:scale(1.05)}.calendar-day.other-month{color:#ccc;cursor:default;pointer-events:none}.calendar-day.today{border:2px solid #667eea}.calendar-day.selected,.calendar-day.start-date,.calendar-day.end-date{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;font-weight:bold}.calendar-day.in-range{background:rgba(102,126,234,.2);color:#333;border-radius:0}.calendar-day.start-date{border-top-right-radius:8px;border-bottom-right-radius:8px}.calendar-day.end-date{border-top-left-radius:8px;border-bottom-left-radius:8px}.calendar-footer{padding:15px;text-align:center;border-top:1px solid #e0e0e0;background:#f8f9fa}.calendar-footer .btn{margin:0 5px;padding:8px 20px;font-size:14px}@media (max-width:768px){.calendar-container{flex-direction:column}.calendar-month{min-width:auto}}
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    class PersianDateConverter {
+        gregorianToJalali(gy, gm, gd) {
+            let g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+            let jy = (gy <= 1600) ? 0 : 979;
+            gy -= (gy <= 1600) ? 621 : 1600;
+            let gy2 = (gm > 2) ? (gy + 1) : gy;
+            let days = 365 * gy + parseInt((gy2 + 3) / 4) - parseInt((gy2 + 99) / 100) + parseInt((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
+            if (gm > 2 && (((gy2 % 4) == 0 && (gy2 % 100) != 0) || ((gy2 % 400) == 0))) days++;
+            jy += 33 * parseInt(days / 12053);
+            days %= 12053;
+            jy += 4 * parseInt(days / 1461);
+            days %= 1461;
+            jy += parseInt((days - 1) / 365);
+            if (days > 365) days = (days - 1) % 365;
+            let jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+            let jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+            return [jy, jm, jd];
+        }
 
-        // تابع برای به‌روزرسانی فیلدها
-        function updateDateFields(start, end) {
-            // نمایش تاریخ شمسی در فیلد قابل مشاهده
-            $('#daterange').val(start.format('jYYYY/jMM/jDD') + ' - ' + end.format('jYYYY/jMM/jDD'));
-            // ذخیره تاریخ شمسی با فرمت YYYY-MM-DD در فیلدهای مخفی برای ارسال به سرور
-            $('#enter_date').val(start.format('jYYYY-jMM-jDD'));
-            $('#exit_date').val(end.format('jYYYY-jMM-jDD'));
+        jalaliToGregorian(jy, jm, jd) {
+            let gy = (jm <= 6) ? (jy + 621) : (jy + 622);
+            let days = (jm <= 6) ? ((jm - 1) * 31 + jd) : (((jm - 7) * 30) + 186 + jd);
+            gy += 400 * parseInt(days / 146097);
+            days %= 146097;
+            if (days > 36524) {
+                gy += 100 * parseInt(--days / 36524);
+                days %= 36524;
+                if (days >= 365) days++;
+            }
+            gy += 4 * parseInt(days / 1461);
+            days %= 1461;
+            if (days > 365) {
+                gy += parseInt((days - 1) / 365);
+                days = (days - 1) % 365;
+            }
+            let gd = days + 1;
+            let g_d_m = [31, (gy % 4 == 0 && gy % 100 != 0 || gy % 400 == 0) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            let gm;
+            for (gm = 0; gm < 12; gm++) {
+                if (gd <= g_d_m[gm]) break;
+                gd -= g_d_m[gm];
+            }
+            return new Date(gy, gm, gd);
+        }
+    }
+
+    class PersianCalendar {
+        constructor() {
+            this.container = document.getElementById('persianCalendar');
+            this.dateConverter = new PersianDateConverter();
+            this.persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            this.persianDays = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
+            this.displayDate = new Date();
+            this.selectedStartDate = null;
+            this.selectedEndDate = null;
+            this.init();
+        }
+
+        init() {
+            const enterDateVal = document.getElementById('enter_date').value;
+            const exitDateVal = document.getElementById('exit_date').value;
+            if (enterDateVal) {
+                this.selectedStartDate = this.parseDate(enterDateVal);
+                this.displayDate = new Date(this.selectedStartDate);
+            }
+            if (exitDateVal) {
+                this.selectedEndDate = this.parseDate(exitDateVal);
+            }
+            this.bindEvents();
+            this.render();
+            if (this.selectedStartDate && this.selectedEndDate) this.updateDisplayInput();
+        }
+
+        parseDate(dateStr) {
+            const parts = dateStr.split('-');
+            return this.dateConverter.jalaliToGregorian(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
+        }
+
+        bindEvents() {
+            document.getElementById('daterange-display').addEventListener('click', () => this.container.classList.toggle('active'));
+            document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
+            document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
+            document.getElementById('applyBtn').addEventListener('click', () => this.applySelection());
+            document.getElementById('cancelBtn').addEventListener('click', () => this.container.classList.remove('active'));
         }
         
-        // تنظیمات تقویم
-        let config = {
-            "opens": "center",
-            "autoUpdateInput": false, // ما خودمان فیلد را آپدیت می‌کنیم
-            "locale": {
-                "format": "jYYYY/jMM/jDD",
-                "separator": " - ",
-                "applyLabel": "تایید",
-                "cancelLabel": "انصراف",
-                "daysOfWeek": ["ی", "د", "س", "چ", "پ", "ج", "ش"],
-                "monthNames": ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"],
-                "firstDay": 6
-            }
-        };
-
-        // فعال‌سازی تقویم
-        $('#daterange').daterangepicker(config);
-
-        // رویداد برای زمانی که کاربر بازه جدیدی انتخاب و دکمه "تایید" را زد
-        $('#daterange').on('apply.daterangepicker', function(ev, picker) {
-            updateDateFields(picker.startDate, picker.endDate);
-        });
-
-        $('#daterange').on('cancel.daterangepicker', function(ev, picker) {
-            $(this).val('');
-            $('#enter_date').val('');
-            $('#exit_date').val('');
-        });
-
-        // مقداردهی اولیه برای صفحه ویرایش
-        const enterDate = $('#enter_date').val();
-        const exitDate = $('#exit_date').val();
-        if(enterDate && exitDate){
-            // تاریخ‌ها را از فرمت شمسی YYYY-MM-DD می‌خوانیم
-            const startMoment = moment(enterDate, 'jYYYY-jMM-jDD');
-            const endMoment = moment(exitDate, 'jYYYY-jMM-jDD');
-            $('#daterange').data('daterangepicker').setStartDate(startMoment);
-            $('#daterange').data('daterangepicker').setEndDate(endMoment);
-            updateDateFields(startMoment, endMoment);
-        } else {
-            $('#daterange').val('');
+        changeMonth(offset) {
+            this.displayDate.setMonth(this.displayDate.getMonth() + offset);
+            this.render();
         }
-    });
-  </script>
+
+        render() {
+            this.renderMonth(document.getElementById('calendar1'), this.displayDate);
+            const nextMonthDate = new Date(this.displayDate);
+            nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+            this.renderMonth(document.getElementById('calendar2'), nextMonthDate);
+        }
+
+        renderMonth(element, date) {
+            const [jy, jm] = this.dateConverter.gregorianToJalali(date.getFullYear(), date.getMonth() + 1, 1);
+            element.querySelector('.calendar-header span').textContent = `${this.persianMonths[jm - 1]} ${jy}`;
+            const gridElement = element.querySelector('.calendar-grid');
+            gridElement.innerHTML = '';
+            this.persianDays.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                gridElement.appendChild(dayHeader);
+            });
+            const firstDayOfMonth = this.dateConverter.jalaliToGregorian(jy, jm, 1).getDay();
+            const startOffset = (firstDayOfMonth + 1) % 7;
+            const daysInMonth = (jm <= 6) ? 31 : (jm <= 11) ? 30 : (this.isPersianLeapYear(jy) ? 30 : 29);
+            for (let i = 0; i < startOffset; i++) gridElement.appendChild(document.createElement('div'));
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('button');
+                dayElement.type = 'button';
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                const currentDayGregorian = this.dateConverter.jalaliToGregorian(jy, jm, day);
+                if (this.isSameDay(currentDayGregorian, new Date())) dayElement.classList.add('today');
+                if (this.selectedStartDate && this.isSameDay(currentDayGregorian, this.selectedStartDate)) dayElement.classList.add('start-date', 'selected');
+                if (this.selectedEndDate && this.isSameDay(currentDayGregorian, this.selectedEndDate)) dayElement.classList.add('end-date', 'selected');
+                if (this.selectedStartDate && this.selectedEndDate && currentDayGregorian > this.selectedStartDate && currentDayGregorian < this.selectedEndDate) dayElement.classList.add('in-range');
+                dayElement.addEventListener('click', () => this.selectDate(currentDayGregorian));
+                gridElement.appendChild(dayElement);
+            }
+        }
+        
+        selectDate(date) {
+            if (!this.selectedStartDate || (this.selectedStartDate && this.selectedEndDate)) {
+                this.selectedStartDate = date;
+                this.selectedEndDate = null;
+            } else if (date < this.selectedStartDate) {
+                this.selectedEndDate = this.selectedStartDate;
+                this.selectedStartDate = date;
+            } else {
+                this.selectedEndDate = date;
+            }
+            this.render();
+        }
+
+        applySelection() {
+            if (this.selectedStartDate && this.selectedEndDate) {
+                this.updateDisplayInput();
+                this.container.classList.remove('active');
+            } else {
+                alert('لطفا بازه تاریخی را کامل انتخاب کنید (تاریخ شروع و پایان).');
+            }
+        }
+
+        updateDisplayInput() {
+            const startJalali = this.dateConverter.gregorianToJalali(this.selectedStartDate.getFullYear(), this.selectedStartDate.getMonth() + 1, this.selectedStartDate.getDate());
+            const endJalali = this.dateConverter.gregorianToJalali(this.selectedEndDate.getFullYear(), this.selectedEndDate.getMonth() + 1, this.selectedEndDate.getDate());
+            const formatJalali = (d) => `${d[0]}-${String(d[1]).padStart(2, '0')}-${String(d[2]).padStart(2, '0')}`;
+            document.getElementById('daterange-display').value = `${formatJalali(startJalali)}   -   ${formatJalali(endJalali)}`;
+            document.getElementById('enter_date').value = formatJalali(startJalali);
+            document.getElementById('exit_date').value = formatJalali(endJalali);
+        }
+
+        isSameDay(d1, d2) {
+            return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+        }
+
+        isPersianLeapYear(year) {
+             return (((((year - 474) % 2820) + 474) + 38) * 682) % 2816 < 682;
+        }
+    }
+    new PersianCalendar();
+});
+</script>
 {% endblock %}
