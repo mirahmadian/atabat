@@ -1,177 +1,128 @@
 {% extends 'admin_layout.html' %}
 
+{% block head %}
+    <!-- بارگذاری Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- بارگذاری Persian Datepicker CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet" crossorigin="anonymous">
+{% endblock %}
+
 {% block content %}
-<div class="card">
-    <div class="card-header">
-        <h2>{{ 'ویرایش ماموریت' if assignment else 'افزودن ماموریت جدید' }}</h2>
-    </div>
-    <div class="card-body">
-        <form method="post">
-            <div class="form-group">
-                <label for="guide_name" class="form-label">نام مدیر راهنما:</label>
-                <input type="text" name="guide_name" id="guide_name" class="form-control" value="{{ assignment['guide_name'] if assignment else '' }}" required>
-            </div>
-            <div class="form-group">
-                <label for="guide_national_id" class="form-label">کد ملی مدیر راهنما:</label>
-                <input type="text" name="guide_national_id" id="guide_national_id" class="form-control" value="{{ assignment['guide_national_id'] if assignment else '' }}" required>
-            </div>
-
-            <div class="form-group" style="position: relative;">
-                <label class="form-label">بازه تاریخی ماموریت (ورود و خروج):</label>
-                <div class="date-input-wrapper">
-                    <input type="text" id="daterange-display" class="form-control text-center" placeholder="برای انتخاب تاریخ کلیک کنید" readonly>
+<div class="container my-4" style="max-width: 700px;">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">{{ 'ویرایش ماموریت' if assignment else 'افزودن ماموریت جدید' }}</h3>
+        </div>
+        <div class="card-body">
+            <form method="post" novalidate>
+                <div class="mb-3">
+                    <label for="guide_name" class="form-label">نام مدیر راهنما:</label>
+                    <input type="text" name="guide_name" id="guide_name" class="form-control" value="{{ assignment['guide_name'] if assignment else '' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="guide_national_id" class="form-label">کد ملی مدیر راهنما:</label>
+                    <input type="text" name="guide_national_id" id="guide_national_id" class="form-control" value="{{ assignment['guide_national_id'] if assignment else '' }}" required>
                 </div>
 
-                <div class="persian-calendar" id="persianCalendar">
-                    <div class="calendar-container">
-                        <div class="calendar-month" id="calendar1">
-                            <div class="calendar-header">
-                                <button type="button" class="nav-btn" id="prevMonth">▶</button>
-                                <span id="monthYear1"></span>
-                                <button type="button" class="nav-btn" id="nextMonth">◀</button>
-                            </div>
-                            <div class="calendar-grid" id="calendarGrid1"></div>
+                <div class="mb-3">
+                    <label class="form-label">بازه تاریخی ماموریت:</label>
+                    <div class="row g-2">
+                        <div class="col">
+                            <input type="text" id="enter_date_display" class="form-control" placeholder="تاریخ ورود" autocomplete="off" required>
+                            <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment['enter_date'] if assignment else '' }}">
                         </div>
-                        <div class="calendar-month" id="calendar2">
-                            <div class="calendar-header">
-                                <span id="monthYear2"></span>
-                            </div>
-                            <div class="calendar-grid" id="calendarGrid2"></div>
+                        <div class="col">
+                            <input type="text" id="exit_date_display" class="form-control" placeholder="تاریخ خروج" autocomplete="off" required>
+                            <input type="hidden" name="exit_date" id="exit_date" value="{{ assignment['exit_date'] if assignment else '' }}">
                         </div>
-                    </div>
-                    <div class="calendar-footer">
-                        <button type="button" class="btn btn-success" id="applyBtn">تایید</button>
-                        <button type="button" class="btn btn-secondary" id="cancelBtn">انصراف</button>
                     </div>
                 </div>
-            </div>
 
-            <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment['enter_date'] if assignment else '' }}">
-            <input type="hidden" name="exit_date" id="exit_date" value="{{ assignment['exit_date'] if assignment else '' }}">
+                <div class="mb-3">
+                    <label for="city" class="form-label">شهر:</label>
+                    <input type="text" name="city" id="city" class="form-control" value="{{ assignment['city'] if assignment else '' }}" required>
+                </div>
 
-            <div class="form-group">
-                <label for="city" class="form-label">شهر:</label>
-                <input type="text" name="city" id="city" class="form-control" value="{{ assignment['city'] if assignment else '' }}" required>
-            </div>
-            <div class="form-group">
-                <label for="hotel_name" class="form-label">نام هتل:</label>
-                <input type="text" name="hotel_name" id="hotel_name" class="form-control" value="{{ assignment['hotel_name'] if assignment else '' }}" required>
-            </div>
-            <div class="form-group">
-                <label for="fixed_manager_name" class="form-label">نام مدیر ثابت:</label>
-                <input type="text" name="fixed_manager_name" id="fixed_manager_name" class="form-control" value="{{ assignment['fixed_manager_name'] if assignment else '' }}" required>
-            </div>
+                <div class="mb-3">
+                    <label for="hotel_name" class="form-label">نام هتل:</label>
+                    <input type="text" name="hotel_name" id="hotel_name" class="form-control" value="{{ assignment['hotel_name'] if assignment else '' }}" required>
+                </div>
 
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-success">💾 ذخیره</button>
-                <a href="{{ url_for('admin_index') }}" class="btn btn-secondary ms-3">انصراف</a>
-            </div>
-        </form>
+                <div class="mb-3">
+                    <label for="fixed_manager_name" class="form-label">نام مدیر ثابت:</label>
+                    <input type="text" name="fixed_manager_name" id="fixed_manager_name" class="form-control" value="{{ assignment['fixed_manager_name'] if assignment else '' }}" required>
+                </div>
+
+                <div class="d-flex justify-content-center mt-4">
+                    <button type="submit" class="btn btn-success px-5">💾 ذخیره</button>
+                    <a href="{{ url_for('admin_index') }}" class="btn btn-secondary ms-3 px-4">انصراف</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<style>
-/* تمام استایل‌های calendar را اینجا قرار دهید یا فایل جدا کنید */
-</style>
+    <!-- بارگذاری jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js" crossorigin="anonymous"></script>
+    <!-- بارگذاری Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <!-- بارگذاری Persian Datepicker JS -->
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js" crossorigin="anonymous"></script>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    class PersianCalendar {
-        constructor() {
-            this.container = document.getElementById('persianCalendar');
-            this.today = new Date();
-            this.displayDate = new Date(this.today);
-            this.selectedStartDate = null;
-            this.selectedEndDate = null;
-            this.bindEvents();
-            this.render();
-        }
+    <script>
+    $(document).ready(function() {
+        // مقدار اولیه تاریخ ها (اگر وجود داشته باشد)
+        let initialEnterDate = "{{ assignment['enter_date'] if assignment else '' }}";
+        let initialExitDate = "{{ assignment['exit_date'] if assignment else '' }}";
 
-        bindEvents() {
-            const displayInput = document.getElementById('daterange-display');
-            displayInput.addEventListener('click', () => {
-                this.container.classList.toggle('active');
-            });
-
-            document.getElementById('prevMonth').addEventListener('click', () => {
-                this.displayDate.setMonth(this.displayDate.getMonth() - 1);
-                this.render();
-            });
-
-            document.getElementById('nextMonth').addEventListener('click', () => {
-                this.displayDate.setMonth(this.displayDate.getMonth() + 1);
-                this.render();
-            });
-
-            document.getElementById('applyBtn').addEventListener('click', () => {
-                if (this.selectedStartDate && this.selectedEndDate) {
-                    document.getElementById('enter_date').value = this.formatDate(this.selectedStartDate);
-                    document.getElementById('exit_date').value = this.formatDate(this.selectedEndDate);
-                    displayInput.value = `${this.formatDate(this.selectedStartDate)} - ${this.formatDate(this.selectedEndDate)}`;
-                    this.container.classList.remove('active');
-                } else {
-                    alert('لطفا هر دو تاریخ را انتخاب کنید.');
+        // تنظیم تقویم شمسی برای تاریخ ورود
+        $("#enter_date_display").persianDatepicker({
+            format: 'YYYY/MM/DD',
+            altField: '#enter_date',
+            initialValue: !!initialEnterDate,
+            initialValueType: 'persian',
+            autoClose: true,
+            observer: true,
+            onSelect: function(unix) {
+                // اگر تاریخ خروج کوچکتر از تاریخ ورود شد، تاریخ خروج را پاک کن
+                let enterDate = $("#enter_date").val();
+                let exitDate = $("#exit_date").val();
+                if (exitDate && exitDate < enterDate) {
+                    $("#exit_date_display").val('');
+                    $("#exit_date").val('');
                 }
-            });
+            }
+        });
 
-            document.getElementById('cancelBtn').addEventListener('click', () => {
-                this.container.classList.remove('active');
-            });
-
-            document.addEventListener('click', (event) => {
-                if (!this.container.contains(event.target) && event.target !== displayInput) {
-                    this.container.classList.remove('active');
+        // تنظیم تقویم شمسی برای تاریخ خروج
+        $("#exit_date_display").persianDatepicker({
+            format: 'YYYY/MM/DD',
+            altField: '#exit_date',
+            initialValue: !!initialExitDate,
+            initialValueType: 'persian',
+            autoClose: true,
+            observer: true,
+            minDate: new Date(), // تاریخ خروج نمی‌تواند قبل از امروز باشد
+            onSelect: function(unix) {
+                let enterDate = $("#enter_date").val();
+                let exitDate = $("#exit_date").val();
+                if (exitDate < enterDate) {
+                    alert('تاریخ خروج نمی‌تواند قبل از تاریخ ورود باشد!');
+                    $("#exit_date_display").val('');
+                    $("#exit_date").val('');
                 }
-            });
-        }
-
-        render() {
-            const grid1 = document.getElementById('calendarGrid1');
-            grid1.innerHTML = '';
-            let year = this.displayDate.getFullYear();
-            let month = this.displayDate.getMonth();
-            let firstDay = new Date(year, month, 1).getDay();
-            let daysInMonth = new Date(year, month + 1, 0).getDate();
-
-            for (let d = 0; d < firstDay; d++) {
-                grid1.appendChild(document.createElement('div'));
             }
+        });
 
-            for (let day = 1; day <= daysInMonth; day++) {
-                let btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'calendar-day';
-                btn.textContent = day;
-
-                let thisDate = new Date(year, month, day);
-                if (thisDate < this.today) btn.classList.add('disabled');
-
-                btn.addEventListener('click', () => this.selectDate(thisDate));
-                grid1.appendChild(btn);
-            }
+        // اگر تاریخ اولیه دارید در ورودی‌ها نمایش داده شود
+        if(initialEnterDate) {
+            $("#enter_date_display").val(initialEnterDate);
         }
-
-        selectDate(date) {
-            if (!this.selectedStartDate || this.selectedEndDate) {
-                this.selectedStartDate = date;
-                this.selectedEndDate = null;
-            } else if (date < this.selectedStartDate) {
-                this.selectedEndDate = this.selectedStartDate;
-                this.selectedStartDate = date;
-            } else {
-                this.selectedEndDate = date;
-            }
-            this.render();
+        if(initialExitDate) {
+            $("#exit_date_display").val(initialExitDate);
         }
-
-        formatDate(date) {
-            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        }
-    }
-
-    new PersianCalendar();
-});
-</script>
+    });
+    </script>
 {% endblock %}
