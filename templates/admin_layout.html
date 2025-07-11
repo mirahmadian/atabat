@@ -1,34 +1,164 @@
-<!doctype html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>پنل مدیریت</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-    <style>
-        @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
-        body { 
-            background-color: #f8f9fa;
-            font-family: 'Vazirmatn', sans-serif;
-        }
-        .container { margin-top: 2rem; margin-bottom: 2rem; }
-        /* استایل برای تقویم تا از فونت وزیر استفاده کند */
-        .daterangepicker {
-            font-family: 'Vazirmatn', sans-serif;
-        }
-    </style>
-</head>
-<body>
-    <div class="container bg-white p-4 p-md-5 border rounded-3 shadow-sm">
-        <h1 class="display-5 mb-4 text-center">پنل مدیریت داده‌ها</h1>
-        {% block content %}{% endblock %}
+{% extends 'admin_layout.html' %}
+
+{% block content %}
+  <h2 class="mb-4 text-center">{{ 'ویرایش ماموریت' if assignment else 'افزودن ماموریت جدید' }}</h2>
+  <form method="post">
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="guide_name" class="form-label">نام مدیر راهنما:</label>
+            <input type="text" name="guide_name" id="guide_name" class="form-control" value="{{ assignment['guide_name'] if assignment else '' }}" required>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="guide_national_id" class="form-label">کد ملی مدیر راهنما:</label>
+            <input type="text" name="guide_national_id" id="guide_national_id" class="form-control" value="{{ assignment['guide_national_id'] if assignment else '' }}" required>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label for="daterange" class="form-label">بازه تاریخی ماموریت (ورود و خروج):</label>
+        <input type="text" id="daterange" class="form-control text-center" autocomplete="off" style="cursor: pointer;" readonly>
+    </div>
+    <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment['enter_date'] if assignment else '' }}">
+    <input type="hidden" name="exit_date" id="exit_date" value="{{ assignment['exit_date'] if assignment else '' }}">
+    
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label for="city" class="form-label">شهر:</label>
+            <input type="text" name="city" id="city" class="form-control" value="{{ assignment['city'] if assignment else '' }}" required>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="hotel_name" class="form-label">نام هتل:</label>
+            <input type="text" name="hotel_name" id="hotel_name" class="form-control" value="{{ assignment['hotel_name'] if assignment else '' }}" required>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="fixed_manager_name" class="form-label">نام مدیر ثابت:</label>
+            <input type="text" name="fixed_manager_name" id="fixed_manager_name" class="form-control" value="{{ assignment['fixed_manager_name'] if assignment else '' }}" required>
+        </div>
     </div>
     
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/moment@2.29.1/min/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+        <button type="submit" class="btn btn-primary btn-lg px-5">ذخیره</button>
+        <a href="{{ url_for('admin_index') }}" class="btn btn-secondary btn-lg px-4">انصراف</a>
+    </div>
+  </form>
+{% endblock %}
+
+{% block scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.9.6/build/moment-jalaali.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  
+  <script>
+    $(function() {
+        // فعال‌سازی کامل تقویم فارسی
+        moment.loadPersian({
+            usePersianDigits: false, 
+            dialect: 'persian-modern'
+        });
+
+        // تاریخ امروز (جمعه 20 تیر 1404)
+        const today = moment('2025-07-11', 'YYYY-MM-DD');
+        
+        // تابع برای به‌روزرسانی فیلدها
+        function updateDateFields(start, end) {
+            // نمایش تاریخ شمسی در فیلد قابل مشاهده
+            $('#daterange').val(start.format('jYYYY/jMM/jDD') + ' - ' + end.format('jYYYY/jMM/jDD'));
+            // ذخیره تاریخ میلادی در فیلدهای مخفی
+            $('#enter_date').val(start.format('YYYY-MM-DD'));
+            $('#exit_date').val(end.format('YYYY-MM-DD'));
+        }
+        
+        // تنظیمات تقویم
+        let config = {
+            "opens": "center",
+            "drops": "down", // مطمئن می‌شویم که تقویم زیر فیلد باز شود
+            "autoUpdateInput": false,
+            "startDate": today,
+            "endDate": today.clone().add(1, 'day'),
+            "locale": {
+                "format": "jYYYY/jMM/jDD",
+                "separator": " - ",
+                "applyLabel": "تایید",
+                "cancelLabel": "انصراف",
+                "fromLabel": "از",
+                "toLabel": "تا",
+                "customRangeLabel": "سفارشی",
+                "weekLabel": "ه",
+                "daysOfWeek": ["ی", "د", "س", "چ", "پ", "ج", "ش"],
+                "monthNames": ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", 
+                              "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"],
+                "firstDay": 6
+            },
+            "isInvalidDate": function(date) {
+                // می‌توانید تاریخ‌های غیرمجاز را اینجا تعریف کنید
+                return false;
+            }
+        };
+
+        // فعال‌سازی تقویم روی فیلد
+        $('#daterange').daterangepicker(config);
+
+        // رویداد برای زمانی که کاربر بازه جدیدی انتخاب و دکمه "تایید" را زد
+        $('#daterange').on('apply.daterangepicker', function(ev, picker) {
+            updateDateFields(picker.startDate, picker.endDate);
+        });
+
+        // رویداد برای زمانی که کاربر انصراف می‌دهد
+        $('#daterange').on('cancel.daterangepicker', function(ev, picker) {
+            // اگر قبلاً تاریخی انتخاب نشده، فیلد را خالی نگه دارید
+            if (!$('#enter_date').val()) {
+                $('#daterange').val('');
+            }
+        });
+
+        // مقداردهی اولیه برای صفحه ویرایش
+        const enterDate = $('#enter_date').val();
+        const exitDate = $('#exit_date').val();
+        if(enterDate && exitDate){
+            const startMoment = moment(enterDate, 'YYYY-MM-DD');
+            const endMoment = moment(exitDate, 'YYYY-MM-DD');
+            // آپدیت کردن تقویم با تاریخ‌های موجود
+            $('#daterange').data('daterangepicker').setStartDate(startMoment);
+            $('#daterange').data('daterangepicker').setEndDate(endMoment);
+            // آپدیت کردن فیلد نمایشی
+            updateDateFields(startMoment, endMoment);
+        } else {
+            // اگر تاریخی موجود نیست، تاریخ امروز را به عنوان پیش‌فرض نمایش دهید
+            updateDateFields(today, today.clone().add(1, 'day'));
+        }
+    });
+  </script>
+  
+  <style>
+    /* سفارشی‌سازی نمایش تقویم */
+    .daterangepicker {
+        direction: rtl;
+        font-family: 'Vazir', 'Tahoma', sans-serif;
+    }
     
-    {% block scripts %}{% endblock %}
-</body>
-</html>
+    .daterangepicker .calendar-table {
+        direction: ltr;
+    }
+    
+    .daterangepicker td.active, .daterangepicker td.active:hover {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .daterangepicker td.today {
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+    
+    .daterangepicker .ranges li {
+        text-align: right;
+    }
+    
+    .daterangepicker .drp-buttons {
+        text-align: left;
+    }
+    
+    .daterangepicker .drp-buttons .btn {
+        margin-left: 5px;
+    }
+  </style>
+{% endblock %}
