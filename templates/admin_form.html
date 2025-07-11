@@ -14,7 +14,7 @@
 
     <div class="mb-3">
         <label for="daterange" class="form-label">بازه تاریخی ماموریت (ورود و خروج):</label>
-        <input type="text" id="daterange" class="form-control text-end" autocomplete="off">
+        <input type="text" id="daterange" class="form-control text-start" autocomplete="off" placeholder="برای انتخاب تاریخ کلیک کنید">
     </div>
 
     <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment['enter_date'] if assignment else '' }}">
@@ -42,11 +42,21 @@
   <script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.9.2/build/moment-jalaali.js"></script>
   
   <script>
+    // این بخش به طور کامل بازنویسی شده است
     $(function() {
-        // ترجمه‌ها و تنظیمات تقویم شمسی
-        var dateRangePickerOptions = {
-            "locale": {
-                "format": "jYYYY/jMM/jDD",
+        moment.loadPersian({usePersianDigits: true, dialect: 'persian-modern'});
+
+        // تابع برای به‌روزرسانی فیلد نمایش
+        function updateDateDisplay(start, end) {
+            var text = start.format('jYYYY/jMM/jDD') + ' - ' + end.format('jYYYY/jMM/jDD');
+            $('#daterange').val(text);
+        }
+
+        // تنظیمات اصلی تقویم
+        var options = {
+            opens: 'left',
+            locale: {
+                "format": "YYYY-MM-DD", // فرمت داخلی میلادی است
                 "separator": " - ",
                 "applyLabel": "تایید",
                 "cancelLabel": "انصراف",
@@ -56,24 +66,34 @@
                 "weekLabel": "هفته",
                 "daysOfWeek": ["ی", "د", "س", "چ", "پ", "ج", "ش"],
                 "monthNames": ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"],
-                "firstDay": 6 // شنبه
+                "firstDay": 6
             },
-            "opens": "center"
+            // نمایش دو ماه در کنار هم مانند سایت علی‌بابا
+            linkedCalendars: false 
         };
 
-        // مقداردهی اولیه اگر در حالت ویرایش باشیم
+        // مقداردهی اولیه اگر در حالت ویرایش هستیم
         var enterDate = $('#enter_date').val();
         var exitDate = $('#exit_date').val();
         if(enterDate && exitDate) {
-            dateRangePickerOptions.startDate = moment(enterDate, 'YYYY-MM-DD').format('jYYYY/jMM/jDD');
-            dateRangePickerOptions.endDate = moment(exitDate, 'YYYY-MM-DD').format('jYYYY/jMM/jDD');
+            options.startDate = moment(enterDate, 'YYYY-MM-DD');
+            options.endDate = moment(exitDate, 'YYYY-MM-DD');
         }
 
-        // فعال‌سازی تقویم
-        $('#daterange').daterangepicker(dateRangePickerOptions, function(start, end, label) {
-            // وقتی کاربر یک بازه انتخاب کرد، مقادیر فیلدهای مخفی را پر می‌کنیم
-            $('#enter_date').val(start.format('YYYY-MM-DD'));
-            $('#exit_date').val(end.format('YYYY-MM-DD'));
+        // فعال‌سازی تقویم روی فیلد
+        $('#daterange').daterangepicker(options);
+
+        // به‌روزرسانی فیلد نمایش در ابتدا
+        if(enterDate && exitDate) {
+            updateDateDisplay(options.startDate, options.endDate);
+        }
+        
+        // وقتی کاربر بازه جدیدی انتخاب کرد
+        $('#daterange').on('apply.daterangepicker', function(ev, picker) {
+            updateDateDisplay(picker.startDate, picker.endDate);
+            // ذخیره تاریخ‌های میلادی در فیلدهای مخفی برای ارسال به سرور
+            $('#enter_date').val(picker.startDate.format('YYYY-MM-DD'));
+            $('#exit_date').val(picker.endDate.format('YYYY-MM-DD'));
         });
     });
   </script>
