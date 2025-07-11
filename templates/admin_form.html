@@ -21,7 +21,7 @@
                 <div class="date-input-wrapper">
                     <input type="text" id="daterange-display" class="form-control text-center" placeholder="برای انتخاب تاریخ کلیک کنید" readonly>
                 </div>
-                
+
                 <div class="persian-calendar" id="persianCalendar">
                     <div class="calendar-container">
                         <div class="calendar-month" id="calendar1">
@@ -48,18 +48,18 @@
 
             <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment['enter_date'] if assignment else '' }}">
             <input type="hidden" name="exit_date" id="exit_date" value="{{ assignment['exit_date'] if assignment else '' }}">
-            
+
             <div class="form-group">
-              <label for="city" class="form-label">شهر:</label>
-              <input type="text" name="city" id="city" class="form-control" value="{{ assignment['city'] if assignment else '' }}" required>
+                <label for="city" class="form-label">شهر:</label>
+                <input type="text" name="city" id="city" class="form-control" value="{{ assignment['city'] if assignment else '' }}" required>
             </div>
             <div class="form-group">
-              <label for="hotel_name" class="form-label">نام هتل:</label>
-              <input type="text" name="hotel_name" id="hotel_name" class="form-control" value="{{ assignment['hotel_name'] if assignment else '' }}" required>
+                <label for="hotel_name" class="form-label">نام هتل:</label>
+                <input type="text" name="hotel_name" id="hotel_name" class="form-control" value="{{ assignment['hotel_name'] if assignment else '' }}" required>
             </div>
             <div class="form-group">
-              <label for="fixed_manager_name" class="form-label">نام مدیر ثابت:</label>
-              <input type="text" name="fixed_manager_name" id="fixed_manager_name" class="form-control" value="{{ assignment['fixed_manager_name'] if assignment else '' }}" required>
+                <label for="fixed_manager_name" class="form-label">نام مدیر ثابت:</label>
+                <input type="text" name="fixed_manager_name" id="fixed_manager_name" class="form-control" value="{{ assignment['fixed_manager_name'] if assignment else '' }}" required>
             </div>
 
             <div class="text-center mt-4">
@@ -73,122 +73,105 @@
 
 {% block scripts %}
 <style>
-.form-group{margin-bottom:20px}.form-label{display:block;font-weight:600;color:#333;margin-bottom:8px;font-size:14px}.form-control{width:100%;border-radius:15px;border:2px solid #e0e0e0;padding:12px 20px;font-size:16px;transition:all .3s ease;background:white;font-family:'Vazirmatn',sans-serif}.form-control:focus{border-color:#667eea;outline:none;box-shadow:0 0 0 3px rgba(102,126,234,.1);transform:translateY(-2px)}.btn{border-radius:15px;padding:12px 30px;font-weight:600;transition:all .3s ease;border:none;cursor:pointer;font-size:16px;font-family:'Vazirmatn',sans-serif;text-decoration:none;display:inline-block;text-align:center}.btn-success{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.btn-success:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(102,126,234,.3)}.btn-secondary{background:#6c757d;color:white}.btn-secondary:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(108,117,125,.3);background:#5a6268}.ms-3{margin-right:15px}.mt-4{margin-top:1.5rem}.text-center{text-align:center}.date-input-wrapper{position:relative}.date-input-wrapper::after{content:'📅';position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:18px}.persian-calendar{display:none;position:absolute;top:100%;left:0;right:0;z-index:1000;background:white;border-radius:15px;box-shadow:0 20px 40px rgba(0,0,0,.15);border:1px solid #e0e0e0;overflow:hidden;margin-top:5px}.persian-calendar.active{display:block}.calendar-container{display:flex;width:100%}.calendar-month{flex:1;min-width:300px}.calendar-header{padding:15px;text-align:center;font-weight:600;display:flex;align-items:center;justify-content:space-between}.nav-btn{background:none;border:none;color:#555;font-size:18px;cursor:pointer;padding:8px 12px;border-radius:50%;transition:all .3s ease}.nav-btn:hover{background:rgba(0,0,0,.1)}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#f0f0f0;padding:10px}.calendar-day-header{background:#f8f9fa;padding:10px;text-align:center;font-weight:600;font-size:14px;color:#666}.calendar-day{background:white;padding:10px;text-align:center;cursor:pointer;transition:all .3s ease;font-size:14px;border:none;min-height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px}.calendar-day:hover{background:rgba(102,126,234,.1);transform:scale(1.05)}.calendar-day.other-month{color:#ccc;cursor:default;pointer-events:none}.calendar-day.today{border:2px solid #667eea;font-weight:bold;}.calendar-day.selected,.calendar-day.start-date,.calendar-day.end-date{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;font-weight:bold}.calendar-day.in-range{background:rgba(102,126,234,.2);color:#333;border-radius:0}.calendar-day.start-date{border-top-right-radius:8px;border-bottom-right-radius:8px}.calendar-day.end-date{border-top-left-radius:8px;border-bottom-left-radius:8px}.calendar-footer{padding:15px;text-align:center;border-top:1px solid #e0e0e0;background:#f8f9fa}.calendar-footer .btn{margin:0 5px;padding:8px 20px;font-size:14px}
-.calendar-day.disabled { color: #ccc; cursor: not-allowed; pointer-events: none; background: #f5f5f5; }
-.calendar-day.disabled:hover { background: #f5f5f5; transform: none; }
-@media (max-width:768px){.calendar-container{flex-direction:column}.calendar-month{min-width:auto}}
+/* تمام استایل‌های calendar را اینجا قرار دهید یا فایل جدا کنید */
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    class PersianDateConverter {
-        gregorianToJalali(g_y, g_m, g_d) {
-            const g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-            const j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-            const gy = g_y - 1600;
-            const gm = g_m - 1;
-            const gd = g_d - 1;
-            let g_day_no = 365 * gy + Math.floor((gy + 3) / 4) - Math.floor((gy + 99) / 100) + Math.floor((gy + 399) / 400);
-            for (let i = 0; i < gm; ++i) g_day_no += g_days_in_month[i];
-            if (gm > 1 && ((gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0))) g_day_no++;
-            g_day_no += gd;
-            let j_day_no = g_day_no - 79;
-            let j_np = Math.floor(j_day_no / 12053);
-            j_day_no = j_day_no % 12053;
-            let jy = 979 + 33 * j_np + 4 * Math.floor(j_day_no / 1461);
-            j_day_no %= 1461;
-            if (j_day_no >= 366) {
-                jy += Math.floor((j_day_no - 1) / 365);
-                j_day_no = (j_day_no - 1) % 365;
-            }
-            let jm;
-            for (let i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) j_day_no -= j_days_in_month[i];
-            jm = i + 1;
-            const jd = j_day_no + 1;
-            return [jy, jm, jd];
-        }
-
-        jalaliToGregorian(j_y, j_m, j_d) {
-            const g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-            const j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-            const jy = j_y - 979;
-            const jm = j_m - 1;
-            const jd = j_d - 1;
-            let j_day_no = 365 * jy + Math.floor(jy / 33) * 8 + Math.floor((jy % 33 + 3) / 4);
-            for (let i = 0; i < jm; ++i) j_day_no += j_days_in_month[i];
-            j_day_no += jd;
-            let g_day_no = j_day_no + 79;
-            let gy = 1600 + 400 * Math.floor(g_day_no / 146097);
-            g_day_no = g_day_no % 146097;
-            let leap = true;
-            if (g_day_no >= 36525) {
-                g_day_no--;
-                gy += 100 * Math.floor(g_day_no / 36524);
-                g_day_no = g_day_no % 36524;
-                if (g_day_no >= 365) g_day_no++;
-                else leap = false;
-            }
-            gy += 4 * Math.floor(g_day_no / 1461);
-            g_day_no %= 1461;
-            if (g_day_no >= 366) {
-                leap = false;
-                g_day_no--;
-                gy += Math.floor(g_day_no / 365);
-                g_day_no = g_day_no % 365;
-            }
-            let i;
-            for (let i = 0; g_day_no >= g_days_in_month[i] + (i === 1 && leap); i++) g_day_no -= g_days_in_month[i] + (i === 1 && leap);
-            const gm = i + 1;
-            const gd = g_day_no + 1;
-            return new Date(gy, gm - 1, gd);
-        }
-    }
-
+document.addEventListener("DOMContentLoaded", function () {
     class PersianCalendar {
         constructor() {
             this.container = document.getElementById('persianCalendar');
-            this.dateConverter = new PersianDateConverter();
-            this.persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-            this.persianDays = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
             this.today = new Date();
-            this.today.setHours(0, 0, 0, 0);
             this.displayDate = new Date(this.today);
             this.selectedStartDate = null;
             this.selectedEndDate = null;
-            this.init();
-        }
-
-        isPersianLeapYear(year) {
-            return (((((year - 474) % 2820) + 474) + 38) * 682) % 2816 < 682;
-        }
-
-        init() {
-            const enterDateVal = document.getElementById('enter_date').value;
-            const exitDateVal = document.getElementById('exit_date').value;
-            if (enterDateVal) {
-                this.selectedStartDate = this.parseDate(enterDateVal);
-                if (this.selectedStartDate < this.today) {
-                    this.displayDate = new Date(this.selectedStartDate);
-                }
-            }
-            if (exitDateVal) {
-                this.selectedEndDate = this.parseDate(exitDateVal);
-            }
             this.bindEvents();
             this.render();
-            if (this.selectedStartDate && this.selectedEndDate) {
-                this.updateDisplayInput();
-            }
-        }
-
-        parseDate(dateStr) {
-            const parts = dateStr.split('-');
-            return this.dateConverter.jalaliToGregorian(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
         }
 
         bindEvents() {
-            document.getElementById('daterange-display').addEventListener('click', () => this.container.classList.toggle('active'));
-            document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
-            document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
-            document.getElementById('applyBtn').addEventListener('click', () => this.applySelection());
-            document.getElementById('cancelBtn').addEvent
+            const displayInput = document.getElementById('daterange-display');
+            displayInput.addEventListener('click', () => {
+                this.container.classList.toggle('active');
+            });
+
+            document.getElementById('prevMonth').addEventListener('click', () => {
+                this.displayDate.setMonth(this.displayDate.getMonth() - 1);
+                this.render();
+            });
+
+            document.getElementById('nextMonth').addEventListener('click', () => {
+                this.displayDate.setMonth(this.displayDate.getMonth() + 1);
+                this.render();
+            });
+
+            document.getElementById('applyBtn').addEventListener('click', () => {
+                if (this.selectedStartDate && this.selectedEndDate) {
+                    document.getElementById('enter_date').value = this.formatDate(this.selectedStartDate);
+                    document.getElementById('exit_date').value = this.formatDate(this.selectedEndDate);
+                    displayInput.value = `${this.formatDate(this.selectedStartDate)} - ${this.formatDate(this.selectedEndDate)}`;
+                    this.container.classList.remove('active');
+                } else {
+                    alert('لطفا هر دو تاریخ را انتخاب کنید.');
+                }
+            });
+
+            document.getElementById('cancelBtn').addEventListener('click', () => {
+                this.container.classList.remove('active');
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!this.container.contains(event.target) && event.target !== displayInput) {
+                    this.container.classList.remove('active');
+                }
+            });
+        }
+
+        render() {
+            const grid1 = document.getElementById('calendarGrid1');
+            grid1.innerHTML = '';
+            let year = this.displayDate.getFullYear();
+            let month = this.displayDate.getMonth();
+            let firstDay = new Date(year, month, 1).getDay();
+            let daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let d = 0; d < firstDay; d++) {
+                grid1.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                let btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'calendar-day';
+                btn.textContent = day;
+
+                let thisDate = new Date(year, month, day);
+                if (thisDate < this.today) btn.classList.add('disabled');
+
+                btn.addEventListener('click', () => this.selectDate(thisDate));
+                grid1.appendChild(btn);
+            }
+        }
+
+        selectDate(date) {
+            if (!this.selectedStartDate || this.selectedEndDate) {
+                this.selectedStartDate = date;
+                this.selectedEndDate = null;
+            } else if (date < this.selectedStartDate) {
+                this.selectedEndDate = this.selectedStartDate;
+                this.selectedStartDate = date;
+            } else {
+                this.selectedEndDate = date;
+            }
+            this.render();
+        }
+
+        formatDate(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+    }
+
+    new PersianCalendar();
+});
+</script>
+{% endblock %}
