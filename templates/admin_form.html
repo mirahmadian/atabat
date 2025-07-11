@@ -16,10 +16,33 @@
                 <input type="text" name="guide_national_id" id="guide_national_id" class="form-control" value="{{ assignment['guide_national_id'] if assignment else '' }}" required>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" style="position: relative;">
                 <label class="form-label">بازه تاریخی ماموریت (ورود و خروج):</label>
                 <div class="date-input-wrapper">
                     <input type="text" id="daterange-display" class="form-control text-center" placeholder="برای انتخاب تاریخ کلیک کنید" readonly>
+                </div>
+                
+                <div class="persian-calendar" id="persianCalendar">
+                    <div class="calendar-container">
+                        <div class="calendar-month" id="calendar1">
+                            <div class="calendar-header">
+                                <button type="button" class="nav-btn" id="prevMonth">▶</button>
+                                <span id="monthYear1"></span>
+                                <button type="button" class="nav-btn" id="nextMonth">◀</button>
+                            </div>
+                            <div class="calendar-grid" id="calendarGrid1"></div>
+                        </div>
+                        <div class="calendar-month" id="calendar2">
+                            <div class="calendar-header">
+                                <span id="monthYear2"></span>
+                            </div>
+                            <div class="calendar-grid" id="calendarGrid2"></div>
+                        </div>
+                    </div>
+                    <div class="calendar-footer">
+                        <button type="button" class="btn btn-success" id="applyBtn">تایید</button>
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">انصراف</button>
+                    </div>
                 </div>
             </div>
 
@@ -44,29 +67,6 @@
                 <a href="{{ url_for('admin_index') }}" class="btn btn-secondary ms-3">انصراف</a>
             </div>
         </form>
-    </div>
-</div>
-
-<div class="persian-calendar" id="persianCalendar">
-    <div class="calendar-container">
-        <div class="calendar-month" id="calendar1">
-            <div class="calendar-header">
-                <button type="button" class="nav-btn" id="prevMonth">▶</button>
-                <span id="monthYear1"></span>
-                <button type="button" class="nav-btn" id="nextMonth">◀</button>
-            </div>
-            <div class="calendar-grid" id="calendarGrid1"></div>
-        </div>
-        <div class="calendar-month" id="calendar2">
-            <div class="calendar-header">
-                <span id="monthYear2"></span>
-            </div>
-            <div class="calendar-grid" id="calendarGrid2"></div>
-        </div>
-    </div>
-    <div class="calendar-footer">
-        <button type="button" class="btn btn-success" id="applyBtn">تایید</button>
-        <button type="button" class="btn btn-secondary" id="cancelBtn">انصراف</button>
     </div>
 </div>
 {% endblock %}
