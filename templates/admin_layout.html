@@ -4,39 +4,23 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>پنل مدیریت</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-    
     <style>
-        /* --- بخش استایل جدید برای فونت و تقویم --- */
-        @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            background-color: #f8f9fa;
-            font-family: 'Vazirmatn', sans-serif; /* اعمال فونت وزیر به کل صفحه */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
         }
-        .container { margin-top: 2rem; }
-
-        /* استایل‌های سفارشی برای تقویم */
-        .daterangepicker {
-            font-family: 'Vazirmatn', sans-serif;
-        }
-        .daterangepicker .calendar-table th, .daterangepicker .calendar-table td {
-            font-size: 14px;
-            padding: 5px;
-        }
+        .container { max-width: 960px; margin: 0 auto; }
     </style>
 </head>
 <body>
-    <div class="container bg-light p-4 p-md-5 border rounded-3">
-        <h1 class="display-5 mb-4">پنل مدیریت داده‌ها</h1>
+    <div class="container">
         {% block content %}{% endblock %}
     </div>
-    
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    
     {% block scripts %}{% endblock %}
 </body>
 </html>
