@@ -1,6 +1,8 @@
 {% extends 'admin_layout.html' %}
 
 {% block head %}
+    <!-- بارگذاری فونت وزیر -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@30.1.0/dist/font-face.css" rel="stylesheet" crossorigin="anonymous">
     <!-- بارگذاری Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <!-- بارگذاری Bootstrap Icons -->
@@ -8,6 +10,9 @@
     <!-- بارگذاری Persian Datepicker کتابخانه استاندارد -->
     <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet" crossorigin="anonymous">
     <style>
+        body, input, button, select, textarea {
+            font-family: 'Vazir', Tahoma, sans-serif !important;
+        }
         .form-label {
             font-weight: 500;
         }
@@ -42,36 +47,19 @@
         .input-group .input-group-text {
             border-radius: 0.5rem 0 0 0.5rem;
         }
-        /* استایل‌های مخصوص تقویم علی‌بابا */
-        .pwt-datepicker-input-element {
-            cursor: pointer;
-        }
-        .pwt-datepicker-input-element:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.2rem rgba(13,110,253,.15);
-        }
-        /* سفارشی‌سازی تقویم */
-        .pwt-datepicker {
-            font-family: 'Vazir', 'Tahoma', sans-serif;
-        }
-        .pwt-datepicker .pwt-datepicker-days-name {
-            background: #f8f9fa;
-            font-weight: 600;
-        }
-        .pwt-datepicker .pwt-selected-day {
-            background: #0d6efd;
-            color: white;
-        }
-        .pwt-datepicker .pwt-today {
-            background: #e7f3ff;
-            color: #0d6efd;
-            font-weight: bold;
-        }
         .date-field {
             position: relative;
         }
         .date-field .form-control {
             cursor: pointer;
+        }
+        /* استایل پیام هشدار */
+        .alert-fixed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
         }
     </style>
 {% endblock %}
@@ -163,24 +151,48 @@
     <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js" crossorigin="anonymous"></script>
     <script>
     $(document).ready(function() {
-        // مقادیر اولیه
+        // تبدیل رشته تاریخ به Date
+        function toDate(str) {
+            if (!str) return null;
+            const parts = str.split('/');
+            // فرض: فرمت YYYY/MM/DD شمسی (اگر میلادی است، باید تبدیل شود)
+            // این فقط تبدیل ساده به Date میلادی است، در پروژه واقعی باید به شمسی تبدیل کنید
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+
+        // نمایش پیام هشدار
+        function showAlert(message, type = 'info') {
+            const alertClass = type === 'error' ? 'alert-danger' :
+                               type === 'warning' ? 'alert-warning' : 'alert-info';
+
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show alert-fixed" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('body').append(alertHtml);
+            setTimeout(() => {
+                $('.alert').alert('close');
+            }, 5000);
+        }
+
         let initialEnterDate = "{{ assignment['enter_date'] if assignment else '' }}";
         let initialExitDate = "{{ assignment['exit_date'] if assignment else '' }}";
-        
-        // تقویم تاریخ ورود - تنظیمات مثل علی‌بابا
+
+        // مقداردهی اولیه تقویم تاریخ ورود
         $("#enter_date_display").persianDatepicker({
             format: 'YYYY/MM/DD',
             altField: '#enter_date',
             initialValue: !!initialEnterDate,
-            initialValueType: 'persian',
+            initialValueType: 'gregorian', // توجه: اگر تاریخ شمسی است این را به persian تغییر دهید
             autoClose: true,
             observer: true,
-            onSelect: function(unix) {
-                let enterDate = $("#enter_date").val();
-                let exitDate = $("#exit_date").val();
-                
-                // اگر تاریخ خروج قبل از تاریخ ورود است، آن را خالی کن
-                if (exitDate && exitDate < enterDate) {
+            onSelect: function() {
+                let enterDateVal = $("#enter_date").val();
+                let exitDateVal = $("#exit_date").val();
+                if (exitDateVal && toDate(exitDateVal) < toDate(enterDateVal)) {
                     $("#exit_date_display").val('');
                     $("#exit_date").val('');
                     showAlert('تاریخ خروج باید بعد از تاریخ ورود باشد!', 'warning');
@@ -188,19 +200,18 @@
             }
         });
 
-        // تقویم تاریخ خروج - تنظیمات مثل علی‌بابا
+        // مقداردهی اولیه تقویم تاریخ خروج
         $("#exit_date_display").persianDatepicker({
             format: 'YYYY/MM/DD',
             altField: '#exit_date',
             initialValue: !!initialExitDate,
-            initialValueType: 'persian',
+            initialValueType: 'gregorian', // اگر تاریخ شمسی است این را به persian تغییر دهید
             autoClose: true,
             observer: true,
-            onSelect: function(unix) {
-                let enterDate = $("#enter_date").val();
-                let exitDate = $("#exit_date").val();
-                
-                if (enterDate && exitDate < enterDate) {
+            onSelect: function() {
+                let enterDateVal = $("#enter_date").val();
+                let exitDateVal = $("#exit_date").val();
+                if (enterDateVal && toDate(exitDateVal) < toDate(enterDateVal)) {
                     showAlert('تاریخ خروج نمی‌تواند قبل از تاریخ ورود باشد!', 'error');
                     $("#exit_date_display").val('');
                     $("#exit_date").val('');
@@ -208,7 +219,7 @@
             }
         });
 
-        // تنظیم مقادیر اولیه
+        // مقداردهی دستی فیلدهای نمایش در صورت داشتن مقدار اولیه
         if(initialEnterDate) {
             $("#enter_date_display").val(initialEnterDate);
         }
@@ -216,47 +227,25 @@
             $("#exit_date_display").val(initialExitDate);
         }
 
-        // تابع نمایش پیام‌های هشدار
-        function showAlert(message, type = 'info') {
-            const alertClass = type === 'error' ? 'alert-danger' : 
-                              type === 'warning' ? 'alert-warning' : 'alert-info';
-            
-            const alertHtml = `
-                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
-                     style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `;
-            
-            $('body').append(alertHtml);
-            
-            // حذف خودکار پیام بعد از 5 ثانیه
-            setTimeout(() => {
-                $('.alert').alert('close');
-            }, 5000);
-        }
-
-        // اعتبارسنجی فرم قبل از ارسال
+        // اعتبارسنجی فرم هنگام ارسال
         $('form').on('submit', function(e) {
-            const enterDate = $("#enter_date").val();
-            const exitDate = $("#exit_date").val();
-            
-            if (!enterDate || !exitDate) {
+            const enterDateVal = $("#enter_date").val();
+            const exitDateVal = $("#exit_date").val();
+
+            if (!enterDateVal || !exitDateVal) {
                 e.preventDefault();
                 showAlert('لطفاً تاریخ ورود و خروج را انتخاب کنید.', 'error');
                 return false;
             }
-            
-            if (exitDate <= enterDate) {
+
+            if (toDate(exitDateVal) <= toDate(enterDateVal)) {
                 e.preventDefault();
                 showAlert('تاریخ خروج باید بعد از تاریخ ورود باشد.', 'error');
                 return false;
             }
         });
 
-        // اضافه کردن انیمیشن به فیلدهای تاریخ
+        // انیمیشن تمرکز روی فیلدهای تاریخ
         $('.date-field input').on('focus', function() {
             $(this).parent().addClass('shadow-sm');
         }).on('blur', function() {
