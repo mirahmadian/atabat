@@ -44,20 +44,20 @@
 
 
 {% block scripts %}
-  <script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.9.2/build/moment-jalaali.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment-jalaali@0.9.6/dist/moment-jalaali.min.js"></script>
   
   <script>
     $(function() {
         // فعال‌سازی کامل تقویم فارسی
-        moment.loadPersian({usePersianDigits: false, dialect: 'persian-modern'});
+        moment.loadPersian({usePersianDigits: true, dialect: 'persian-modern'});
 
         // تابع برای به‌روزرسانی فیلدها
         function updateDateFields(start, end) {
             // نمایش تاریخ شمسی در فیلد قابل مشاهده
             $('#daterange').val(start.format('jYYYY/jMM/jDD') + ' - ' + end.format('jYYYY/jMM/jDD'));
-            // ذخیره تاریخ میلادی در فیلدهای مخفی
-            $('#enter_date').val(start.format('YYYY-MM-DD'));
-            $('#exit_date').val(end.format('YYYY-MM-DD'));
+            // ذخیره تاریخ شمسی با فرمت YYYY-MM-DD در فیلدهای مخفی برای ارسال به سرور
+            $('#enter_date').val(start.format('jYYYY-jMM-jDD'));
+            $('#exit_date').val(end.format('jYYYY-jMM-jDD'));
         }
         
         // تنظیمات تقویم
@@ -69,17 +69,13 @@
                 "separator": " - ",
                 "applyLabel": "تایید",
                 "cancelLabel": "انصراف",
-                "fromLabel": "از",
-                "toLabel": "تا",
-                "customRangeLabel": "سفارشی",
-                "weekLabel": "ه",
                 "daysOfWeek": ["ی", "د", "س", "چ", "پ", "ج", "ش"],
                 "monthNames": ["فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"],
                 "firstDay": 6
             }
         };
 
-        // فعال‌سازی تقویم روی فیلد
+        // فعال‌سازی تقویم
         $('#daterange').daterangepicker(config);
 
         // رویداد برای زمانی که کاربر بازه جدیدی انتخاب و دکمه "تایید" را زد
@@ -87,17 +83,24 @@
             updateDateFields(picker.startDate, picker.endDate);
         });
 
+        $('#daterange').on('cancel.daterangepicker', function(ev, picker) {
+            $(this).val('');
+            $('#enter_date').val('');
+            $('#exit_date').val('');
+        });
+
         // مقداردهی اولیه برای صفحه ویرایش
         const enterDate = $('#enter_date').val();
         const exitDate = $('#exit_date').val();
         if(enterDate && exitDate){
-            const startMoment = moment(enterDate, 'YYYY-MM-DD');
-            const endMoment = moment(exitDate, 'YYYY-MM-DD');
-            // آپدیت کردن تقویم با تاریخ‌های موجود
+            // تاریخ‌ها را از فرمت شمسی YYYY-MM-DD می‌خوانیم
+            const startMoment = moment(enterDate, 'jYYYY-jMM-jDD');
+            const endMoment = moment(exitDate, 'jYYYY-jMM-jDD');
             $('#daterange').data('daterangepicker').setStartDate(startMoment);
             $('#daterange').data('daterangepicker').setEndDate(endMoment);
-            // آپدیت کردن فیلد نمایشی
             updateDateFields(startMoment, endMoment);
+        } else {
+            $('#daterange').val('');
         }
     });
   </script>
