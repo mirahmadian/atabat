@@ -83,44 +83,44 @@
 document.addEventListener("DOMContentLoaded", function() {
     class PersianDateConverter {
         gregorianToJalali(g_y, g_m, g_d) {
-            var g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-            var j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-            var gy = g_y - 1600;
-            var gm = g_m - 1;
-            var gd = g_d - 1;
-            var g_day_no = 365 * gy + Math.floor((gy + 3) / 4) - Math.floor((gy + 99) / 100) + Math.floor((gy + 399) / 400);
-            for (var i = 0; i < gm; ++i) g_day_no += g_days_in_month[i];
-            if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) g_day_no++;
+            const g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            const j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+            const gy = g_y - 1600;
+            const gm = g_m - 1;
+            const gd = g_d - 1;
+            let g_day_no = 365 * gy + Math.floor((gy + 3) / 4) - Math.floor((gy + 99) / 100) + Math.floor((gy + 399) / 400);
+            for (let i = 0; i < gm; ++i) g_day_no += g_days_in_month[i];
+            if (gm > 1 && ((gy % 4 === 0 && gy % 100 !== 0) || (gy % 400 === 0))) g_day_no++;
             g_day_no += gd;
-            var j_day_no = g_day_no - 79;
-            var j_np = Math.floor(j_day_no / 12053);
+            let j_day_no = g_day_no - 79;
+            let j_np = Math.floor(j_day_no / 12053);
             j_day_no = j_day_no % 12053;
-            var jy = 979 + 33 * j_np + 4 * Math.floor(j_day_no / 1461);
+            let jy = 979 + 33 * j_np + 4 * Math.floor(j_day_no / 1461);
             j_day_no %= 1461;
             if (j_day_no >= 366) {
                 jy += Math.floor((j_day_no - 1) / 365);
                 j_day_no = (j_day_no - 1) % 365;
             }
-            var jm;
-            for (var i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) j_day_no -= j_days_in_month[i];
+            let jm;
+            for (let i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) j_day_no -= j_days_in_month[i];
             jm = i + 1;
-            var jd = j_day_no + 1;
+            const jd = j_day_no + 1;
             return [jy, jm, jd];
         }
 
         jalaliToGregorian(j_y, j_m, j_d) {
-            var g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-            var j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-            var jy = j_y - 979;
-            var jm = j_m - 1;
-            var jd = j_d - 1;
-            var j_day_no = 365 * jy + Math.floor(jy / 33) * 8 + Math.floor((jy % 33 + 3) / 4);
-            for (var i = 0; i < jm; ++i) j_day_no += j_days_in_month[i];
+            const g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            const j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+            const jy = j_y - 979;
+            const jm = j_m - 1;
+            const jd = j_d - 1;
+            let j_day_no = 365 * jy + Math.floor(jy / 33) * 8 + Math.floor((jy % 33 + 3) / 4);
+            for (let i = 0; i < jm; ++i) j_day_no += j_days_in_month[i];
             j_day_no += jd;
-            var g_day_no = j_day_no + 79;
-            var gy = 1600 + 400 * Math.floor(g_day_no / 146097);
+            let g_day_no = j_day_no + 79;
+            let gy = 1600 + 400 * Math.floor(g_day_no / 146097);
             g_day_no = g_day_no % 146097;
-            var leap = true;
+            let leap = true;
             if (g_day_no >= 36525) {
                 g_day_no--;
                 gy += 100 * Math.floor(g_day_no / 36524);
@@ -137,10 +137,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 g_day_no = g_day_no % 365;
             }
             let i;
-            for (i = 0; g_day_no >= g_days_in_month[i] + (i === 1 && leap); i++) g_day_no -= g_days_in_month[i] + (i === 1 && leap);
-            var gm = i + 1;
-            var gd = g_day_no + 1;
-            return new Date(gy, gm -1, gd);
+            for (let i = 0; g_day_no >= g_days_in_month[i] + (i === 1 && leap); i++) g_day_no -= g_days_in_month[i] + (i === 1 && leap);
+            const gm = i + 1;
+            const gd = g_day_no + 1;
+            return new Date(gy, gm - 1, gd);
         }
     }
 
@@ -171,10 +171,14 @@ document.addEventListener("DOMContentLoaded", function() {
                     this.displayDate = new Date(this.selectedStartDate);
                 }
             }
-            if (exitDateVal) { this.selectedEndDate = this.parseDate(exitDateVal); }
+            if (exitDateVal) {
+                this.selectedEndDate = this.parseDate(exitDateVal);
+            }
             this.bindEvents();
             this.render();
-            if (this.selectedStartDate && this.selectedEndDate) { this.updateDisplayInput(); }
+            if (this.selectedStartDate && this.selectedEndDate) {
+                this.updateDisplayInput();
+            }
         }
 
         parseDate(dateStr) {
@@ -187,86 +191,4 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
             document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
             document.getElementById('applyBtn').addEventListener('click', () => this.applySelection());
-            document.getElementById('cancelBtn').addEventListener('click', () => this.container.classList.remove('active'));
-        }
-
-        renderMonth(element, date) {
-            const [jy, jm] = this.dateConverter.gregorianToJalali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-            element.querySelector('.calendar-header span').textContent = `${this.persianMonths[jm - 1]} ${jy}`;
-            const gridElement = element.querySelector('.calendar-grid');
-            gridElement.innerHTML = '';
-            this.persianDays.forEach(day => {
-                const dayHeader = document.createElement('div');
-                dayHeader.className = 'calendar-day-header';
-                dayHeader.textContent = day;
-                gridElement.appendChild(dayHeader);
-            });
-            
-            const firstDayOfMonth = this.dateConverter.jalaliToGregorian(jy, jm, 1).getDay();
-            const startOffset = (firstDayOfMonth + 1) % 7;
-            const daysInMonth = (jm <= 6) ? 31 : (jm <= 11) ? 30 : (this.isPersianLeapYear(jy) ? 30 : 29);
-
-            for (let i = 0; i < startOffset; i++) { gridElement.appendChild(document.createElement('div')); }
-            
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayElement = document.createElement('button');
-                dayElement.type = 'button';
-                dayElement.className = 'calendar-day';
-                dayElement.textContent = day;
-                const currentDayGregorian = this.dateConverter.jalaliToGregorian(jy, jm, day);
-
-                if (currentDayGregorian < this.today) { dayElement.classList.add('disabled'); }
-                if (this.isSameDay(currentDayGregorian, this.today)) { dayElement.classList.add('today'); }
-                if (this.selectedStartDate && this.isSameDay(currentDayGregorian, this.selectedStartDate)) { dayElement.classList.add('start-date', 'selected'); }
-                if (this.selectedEndDate && this.isSameDay(currentDayGregorian, this.selectedEndDate)) { dayElement.classList.add('end-date', 'selected'); }
-                if (this.selectedStartDate && this.selectedEndDate && currentDayGregorian > this.selectedStartDate && currentDayGregorian < this.selectedEndDate) { dayElement.classList.add('in-range'); }
-                
-                dayElement.addEventListener('click', () => this.selectDate(currentDayGregorian));
-                gridElement.appendChild(dayElement);
-            }
-        }
-        
-        selectDate(date) {
-            if (!this.selectedStartDate || (this.selectedStartDate && this.selectedEndDate)) {
-                if (date < this.today) return; 
-                this.selectedStartDate = date;
-                this.selectedEndDate = null;
-            } else if (date < this.selectedStartDate) {
-                if (date < this.today) return;
-                this.selectedEndDate = this.selectedStartDate;
-                this.selectedStartDate = date;
-            } else {
-                this.selectedEndDate = date;
-            }
-            this.render();
-        }
-
-        changeMonth(offset) { this.displayDate.setMonth(this.displayDate.getMonth() + offset); this.render(); }
-        
-        applySelection() { 
-            if (this.selectedStartDate && this.selectedEndDate) { 
-                this.updateDisplayInput(); 
-                this.container.classList.remove('active'); 
-            } else { 
-                alert('لطفا بازه تاریخی را کامل انتخاب کنید (تاریخ شروع و پایان).'); 
-            } 
-        }
-        
-        updateDisplayInput() { 
-            const startJalali = this.dateConverter.gregorianToJalali(this.selectedStartDate.getFullYear(), this.selectedStartDate.getMonth() + 1, this.selectedStartDate.getDate()); 
-            const endJalali = this.dateConverter.gregorianToJalali(this.selectedEndDate.getFullYear(), this.selectedEndDate.getMonth() + 1, this.selectedEndDate.getDate()); 
-            const formatJalali = (d) => `${d[0]}-${String(d[1]).padStart(2, '0')}-${String(d[2]).padStart(2, '0')}`; 
-            document.getElementById('daterange-display').value = `${formatJalali(startJalali)}   -   ${formatJalali(endJalali)}`; 
-            document.getElementById('enter_date').value = formatJalali(startJalali); 
-            document.getElementById('exit_date').value = formatJalali(endJalali); 
-        }
-        
-        isSameDay(d1, d2) { 
-            return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate(); 
-        }
-    }
-
-    new PersianCalendar();
-});
-</script>
-{% endblock %}
+            document.getElementById('cancelBtn').addEvent
