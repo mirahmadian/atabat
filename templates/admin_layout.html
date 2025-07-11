@@ -8,12 +8,23 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     
     <style>
+        /* --- بخش استایل جدید برای فونت و تقویم --- */
         @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
+        
         body { 
             background-color: #f8f9fa;
-            font-family: 'Vazirmatn', sans-serif;
+            font-family: 'Vazirmatn', sans-serif; /* اعمال فونت وزیر به کل صفحه */
         }
         .container { margin-top: 2rem; }
+
+        /* استایل‌های سفارشی برای تقویم */
+        .daterangepicker {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        .daterangepicker .calendar-table th, .daterangepicker .calendar-table td {
+            font-size: 14px;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
@@ -23,7 +34,7 @@
     </div>
     
     <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     
     {% block scripts %}{% endblock %}
