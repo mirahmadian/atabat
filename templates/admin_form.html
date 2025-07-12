@@ -26,28 +26,28 @@
                     <div class="calendar-container">
                         <div class="calendar-month" id="calendar1">
                             <div class="calendar-header">
-                                <button type="button" class="nav-btn" id="prevMonth">›</button>
+                                <button type="button" class="nav-btn" id="prevMonth">▶</button>
                                 <span id="monthYear1"></span>
+                                <button type="button" class="nav-btn" id="nextMonth">◀</button>
                             </div>
                             <div class="calendar-grid" id="calendarGrid1"></div>
                         </div>
                         <div class="calendar-month" id="calendar2">
                             <div class="calendar-header">
                                 <span id="monthYear2"></span>
-                                <button type="button" class="nav-btn" id="nextMonth">‹</button>
                             </div>
                             <div class="calendar-grid" id="calendarGrid2"></div>
                         </div>
                     </div>
                     <div class="calendar-footer">
-                        <button type="button" class="btn btn-secondary" id="cancelBtn">انصراف</button>
                         <button type="button" class="btn btn-success" id="applyBtn">تایید</button>
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">انصراف</button>
                     </div>
                 </div>
             </div>
 
-            <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment['enter_date'] if assignment else '' }}">
-            <input type="hidden" name="exit_date" id="exit_date" value="{{ assignment['exit_date'] if assignment else '' }}">
+            <input type="hidden" name="enter_date" id="enter_date" value="{{ assignment.enter_date if assignment else '' }}">
+            <input type="hidden" name="exit_date" id="exit_date" value="{{ assignment.exit_date if assignment else '' }}">
             
             <div class="form-group">
               <label for="city" class="form-label">شهر:</label>
@@ -63,8 +63,8 @@
             </div>
 
             <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary">💾 ذخیره</button>
-                <a href="{{ url_for('admin_index') }}" class="btn btn-light ms-3">انصراف</a>
+                <button type="submit" class="btn btn-success">💾 ذخیره</button>
+                <a href="{{ url_for('admin_index') }}" class="btn btn-secondary ms-3">انصراف</a>
             </div>
         </form>
     </div>
@@ -74,130 +74,10 @@
 
 {% block scripts %}
 <style>
-    /* 🎨 استایل‌های پایه و عمومی فرم */
-    .form-group{margin-bottom:1.25rem}.form-label{display:block;font-weight:600;color:#333;margin-bottom:0.5rem;font-size:0.9rem}.form-control{width:100%;border-radius:8px;border:1px solid #ced4da;padding:0.75rem 1rem;font-size:1rem;transition:all .2s ease;background-color:#fff;font-family:'Vazirmatn',sans-serif}.form-control:focus{border-color:#86b7fe;outline:0;box-shadow:0 0 0 0.25rem rgba(13,110,253,.25)}.btn{border-radius:8px;padding:0.75rem 1.5rem;font-weight:600;transition:all .2s ease;border:none;cursor:pointer;font-size:1rem;font-family:'Vazirmatn',sans-serif;text-decoration:none;display:inline-block;text-align:center}.btn-primary{background-color:#0d6efd;color:#fff}.btn-primary:hover{background-color:#0b5ed7}.btn-light{background-color:#f8f9fa;color:#000;border:1px solid #ced4da}.btn-light:hover{background-color:#e2e6ea}.ms-3{margin-right:1rem}.mt-4{margin-top:1.5rem}.text-center{text-align:center}.date-input-wrapper{position:relative}.date-input-wrapper::after{content:'📅';position:absolute;left:1rem;top:50%;transform:translateY(-50%);pointer-events:none;font-size:1.2rem}
-
-    /* 🎨 استایل‌های اصلی تقویم */
-    .persian-calendar {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        z-index: 1000;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        border: 1px solid #e0e0e0;
-        margin-top: 8px;
-        padding: 10px;
-        width: 100%;
-        min-width: 620px; /* برای نمایش دو ماه در کنار هم */
-        box-sizing: border-box;
-    }
-    .persian-calendar.active { display: block; }
-    .calendar-container { display: flex; gap: 20px; }
-    .calendar-month { flex: 1; }
-
-    /* 🎨 استایل هدر تقویم (نام ماه و دکمه‌های ناوبری) */
-    .calendar-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 5px;
-        font-weight: bold;
-        font-size: 1.1rem;
-    }
-    .nav-btn {
-        background: none;
-        border: none;
-        color: #555;
-        font-size: 1.5rem;
-        cursor: pointer;
-        padding: 0 10px;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        line-height: 40px;
-        text-align: center;
-        transition: background-color 0.2s ease;
-    }
-    .nav-btn:hover { background-color: #f0f0f0; }
-    /* تغییر جهت دکمه‌های چپ و راست */
-    #prevMonth { order: 1; }
-    #monthYear1 { order: 2; flex-grow: 1; text-align: right; }
-    #monthYear2 { flex-grow: 1; text-align: left;}
-    #nextMonth { order: 3; }
-
-    /* 🎨 استایل گرید اصلی روزها */
-    .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 2px;
-    }
-    .calendar-day-header {
-        text-align: center;
-        font-weight: normal;
-        font-size: 0.85rem;
-        color: #6c757d;
-        padding: 10px 0;
-    }
-    .calendar-day {
-        background: none;
-        padding: 0;
-        text-align: center;
-        cursor: pointer;
-        font-size: 0.95rem;
-        border: none;
-        border-radius: 50%;
-        height: 40px;
-        width: 40px;
-        margin: auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-    }
-
-    /* 🎨 استایل حالت‌های مختلف روزها */
-    .calendar-day:not(.disabled):hover { background-color: #e9ecef; }
-    .calendar-day.today { font-weight: bold; border: 1px solid #0d6efd; }
-    .calendar-day.disabled { color: #adb5bd; cursor: not-allowed; background: none; }
-    
-    /* استایل بازه انتخاب شده */
-    .calendar-day.in-range {
-        background-color: rgba(13, 110, 253, 0.1);
-        border-radius: 0;
-        color: #000;
-    }
-    .calendar-day.start-date, .calendar-day.end-date {
-        background-color: #0d6efd;
-        color: white;
-        font-weight: bold;
-    }
-    /* گرد کردن گوشه‌ها برای ایجاد ظاهر یکپارچه */
-    td.in-range:first-child .calendar-day,
-    .calendar-day.start-date { border-top-left-radius: 50%; border-bottom-left-radius: 50%; }
-    td.in-range:last-child .calendar-day,
-    .calendar-day.end-date { border-top-right-radius: 50%; border-bottom-right-radius: 50%; }
-
-    /* 🎨 استایل فوتر تقویم */
-    .calendar-footer {
-        padding: 15px 10px 5px;
-        text-align: left;
-        border-top: 1px solid #eee;
-        margin-top: 10px;
-    }
-    .calendar-footer .btn { margin-left: 10px; }
-
-    /* 🎨 واکنش‌گرایی برای موبایل */
-    @media (max-width: 640px) {
-        .persian-calendar { min-width: 300px; }
-        .calendar-container { flex-direction: column; gap: 0;}
-    }
+    .form-group{margin-bottom:20px}.form-label{display:block;font-weight:600;color:#333;margin-bottom:8px;font-size:14px}.form-control{width:100%;border-radius:15px;border:2px solid #e0e0e0;padding:12px 20px;font-size:16px;transition:all .3s ease;background:white;box-sizing:border-box}.form-control:focus{border-color:#667eea;outline:none;box-shadow:0 0 0 3px rgba(102,126,234,.1);transform:translateY(-2px)}.btn{border-radius:15px;padding:12px 30px;font-weight:600;transition:all .3s ease;border:none;cursor:pointer;font-size:16px;text-decoration:none;display:inline-block;text-align:center}.btn-success{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.btn-success:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(102,126,234,.3)}.btn-secondary{background:#6c757d;color:white}.btn-secondary:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(108,117,125,.3);background:#5a6268}.date-input-wrapper{position:relative}.date-input-wrapper::after{content:'📅';position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:18px}.persian-calendar{display:none;position:absolute;top:100%;left:0;right:0;z-index:9999;background:white;border-radius:15px;box-shadow:0 20px 40px rgba(0,0,0,.2);border:1px solid #e0e0e0;overflow:hidden;margin-top:5px;min-width:600px}.persian-calendar.active{display:block !important}.calendar-container{display:flex;width:100%}.calendar-month{flex:1;min-width:300px}.calendar-header{padding:15px;text-align:center;font-weight:600;display:flex;align-items:center;justify-content:space-between;background:#f8f9fa;border-bottom:1px solid #e0e0e0}.nav-btn{background:none;border:none;color:#555;font-size:18px;cursor:pointer;padding:8px 12px;border-radius:50%;transition:all .3s ease}.nav-btn:hover{background:rgba(0,0,0,.1)}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#f0f0f0;padding:10px}.calendar-day-header{background:#f8f9fa;padding:10px;text-align:center;font-weight:600;font-size:14px;color:#666}.calendar-day{background:white;padding:10px;text-align:center;cursor:pointer;transition:all .3s ease;font-size:14px;border:none;min-height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px}.calendar-day:hover{background:rgba(102,126,234,.1);transform:scale(1.05)}.calendar-day.other-month{color:#ccc;cursor:default;pointer-events:none}.calendar-day.today{border:2px solid #667eea;font-weight:bold}.calendar-day.selected,.calendar-day.start-date,.calendar-day.end-date{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;font-weight:bold}.calendar-day.in-range{background:rgba(102,126,234,.2);color:#333;border-radius:0}.calendar-day.start-date{border-top-right-radius:8px;border-bottom-right-radius:8px}.calendar-day.end-date{border-top-left-radius:8px;border-bottom-left-radius:8px}.calendar-footer{padding:15px;text-align:center;border-top:1px solid #e0e0e0;background:#f8f9fa}.calendar-footer .btn{margin:0 5px;padding:8px 20px;font-size:14px}.calendar-day.disabled{color:#ccc;cursor:not-allowed;pointer-events:none;background:#f5f5f5}.calendar-day.disabled:hover{background:#f5f5f5;transform:none}@media (max-width:768px){.calendar-container{flex-direction:column}.calendar-month{min-width:auto}.persian-calendar{min-width:100%}}
 </style>
 
 <script>
-// این بخش جاوا اسکریپت بدون تغییر باقی می‌ماند چون منطق آن صحیح است.
 document.addEventListener("DOMContentLoaded", function() {
     class PersianDateConverter {
         gregorianToJalali(g_y, g_m, g_d) {
@@ -207,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var gm = g_m - 1;
             var gd = g_d - 1;
             var g_day_no = 365 * gy + Math.floor((gy + 3) / 4) - Math.floor((gy + 99) / 100) + Math.floor((gy + 399) / 400);
-            for (var i = 0; i < gm; ++i) g_day_no += g_days_in_month[i];
+            for (var j = 0; j < gm; ++j) g_day_no += g_days_in_month[j];
             if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) g_day_no++;
             g_day_no += gd;
             var j_day_no = g_day_no - 79;
@@ -220,12 +100,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 j_day_no = (j_day_no - 1) % 365;
             }
             var jm;
-            for (var i = 0; i < 11 && j_day_no >= j_days_in_month[i]; ++i) j_day_no -= j_days_in_month[i];
-            jm = i + 1;
+            for (var m = 0; m < 11 && j_day_no >= j_days_in_month[m]; ++m) j_day_no -= j_days_in_month[m];
+            jm = m + 1;
             var jd = j_day_no + 1;
             return [jy, jm, jd];
         }
-
         jalaliToGregorian(j_y, j_m, j_d) {
             var g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
             var j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
@@ -233,7 +112,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var jm = j_m - 1;
             var jd = j_d - 1;
             var j_day_no = 365 * jy + Math.floor(jy / 33) * 8 + Math.floor((jy % 33 + 3) / 4);
-            for (var i = 0; i < jm; ++i) j_day_no += j_days_in_month[i];
+            for (var k = 0; k < jm; ++k) j_day_no += j_days_in_month[k];
             j_day_no += jd;
             var g_day_no = j_day_no + 79;
             var gy = 1600 + 400 * Math.floor(g_day_no / 146097);
@@ -254,11 +133,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 gy += Math.floor(g_day_no / 365);
                 g_day_no = g_day_no % 365;
             }
-            let i;
-            for (i = 0; g_day_no >= g_days_in_month[i] + (i === 1 && leap); i++) g_day_no -= g_days_in_month[i] + (i === 1 && leap);
-            var gm = i + 1;
+            let idx;
+            for (idx = 0; g_day_no >= g_days_in_month[idx] + (idx === 1 && leap); idx++) g_day_no -= g_days_in_month[idx] + (idx === 1 && leap);
+            var gm = idx + 1;
             var gd = g_day_no + 1;
-            return new Date(gy, gm -1, gd);
+            return new Date(gy, gm - 1, gd);
         }
     }
 
@@ -289,19 +168,35 @@ document.addEventListener("DOMContentLoaded", function() {
                     this.displayDate = new Date(this.selectedStartDate);
                 }
             }
-            if (exitDateVal) { this.selectedEndDate = this.parseDate(exitDateVal); }
+            if (exitDateVal) {
+                this.selectedEndDate = this.parseDate(exitDateVal);
+            }
             this.bindEvents();
             this.render();
-            if (this.selectedStartDate && this.selectedEndDate) { this.updateDisplayInput(); }
+            if (this.selectedStartDate && this.selectedEndDate) {
+                this.updateDisplayInput();
+            }
         }
 
         parseDate(dateStr) {
-            const parts = dateStr.split('-');
+            const parts = dateStr.split('/');
             return this.dateConverter.jalaliToGregorian(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
         }
 
         bindEvents() {
-            document.getElementById('daterange-display').addEventListener('click', () => this.container.classList.toggle('active'));
+            const displayInput = document.getElementById('daterange-display');
+            displayInput.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.container.classList.add('active');
+            });
+            document.addEventListener('click', (e) => {
+                if (!this.container.contains(e.target) && !displayInput.contains(e.target)) {
+                    this.container.classList.remove('active');
+                }
+            });
+            this.container.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
             document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
             document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
             document.getElementById('applyBtn').addEventListener('click', () => this.applySelection());
@@ -309,75 +204,61 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         renderMonth(element, date) {
-            const [jy, jm] = this.dateConverter.gregorianToJalali(date.getFullYear(), date.getMonth() + 1, 1);
+            const [jy, jm] = this.dateConverter.gregorianToJalali(date.getFullYear(), date.getMonth() + 1, date.getDate());
             element.querySelector('.calendar-header span').textContent = `${this.persianMonths[jm - 1]} ${jy}`;
             const gridElement = element.querySelector('.calendar-grid');
             gridElement.innerHTML = '';
-            
-            // Wrap grid in a table for better range styling
-            const table = document.createElement('table');
-            const tbody = document.createElement('tbody');
-            table.appendChild(tbody);
-            
-            // Add headers
-            const headerRow = document.createElement('tr');
             this.persianDays.forEach(day => {
-                const th = document.createElement('th');
-                th.className = 'calendar-day-header';
-                th.textContent = day;
-                headerRow.appendChild(th);
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                gridElement.appendChild(dayHeader);
             });
-            tbody.appendChild(headerRow);
-            
             const firstDayOfMonth = this.dateConverter.jalaliToGregorian(jy, jm, 1).getDay();
             const startOffset = (firstDayOfMonth + 1) % 7;
             const daysInMonth = (jm <= 6) ? 31 : (jm <= 11) ? 30 : (this.isPersianLeapYear(jy) ? 30 : 29);
-
-            let currentDay = 1;
-            for (let i = 0; i < 6; i++) {
-                const row = document.createElement('tr');
-                for (let j = 0; j < 7; j++) {
-                    const cell = document.createElement('td');
-                    if ((i === 0 && j < startOffset) || currentDay > daysInMonth) {
-                        cell.innerHTML = '&nbsp;';
-                    } else {
-                        const day = currentDay;
-                        const dayElement = document.createElement('button');
-                        dayElement.type = 'button';
-                        dayElement.className = 'calendar-day';
-                        dayElement.textContent = day;
-                        const currentDayGregorian = this.dateConverter.jalaliToGregorian(jy, jm, day);
-
-                        if (currentDayGregorian < this.today) { dayElement.classList.add('disabled'); }
-                        if (this.isSameDay(currentDayGregorian, this.today)) { dayElement.classList.add('today'); }
-                        
-                        if (this.selectedStartDate && this.selectedEndDate && currentDayGregorian > this.selectedStartDate && currentDayGregorian < this.selectedEndDate) { 
-                            cell.classList.add('in-range'); 
-                        }
-                        if (this.selectedStartDate && this.isSameDay(currentDayGregorian, this.selectedStartDate)) { 
-                            dayElement.classList.add('start-date');
-                            if(this.selectedEndDate) cell.classList.add('in-range');
-                        }
-                        if (this.selectedEndDate && this.isSameDay(currentDayGregorian, this.selectedEndDate)) { 
-                            dayElement.classList.add('end-date');
-                             if(this.selectedStartDate) cell.classList.add('in-range');
-                        }
-                        
-                        dayElement.addEventListener('click', () => this.selectDate(currentDayGregorian));
-                        cell.appendChild(dayElement);
-                        currentDay++;
-                    }
-                    row.appendChild(cell);
-                }
-                tbody.appendChild(row);
-                if (currentDay > daysInMonth) break;
+            for (let i = 0; i < startOffset; i++) {
+                gridElement.appendChild(document.createElement('div'));
             }
-            gridElement.appendChild(table);
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('button');
+                dayElement.type = 'button';
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                const currentDayGregorian = this.dateConverter.jalaliToGregorian(jy, jm, day);
+                if (currentDayGregorian < this.today) {
+                    dayElement.classList.add('disabled');
+                }
+                if (this.isSameDay(currentDayGregorian, this.today)) {
+                    dayElement.classList.add('today');
+                }
+                if (this.selectedStartDate && this.isSameDay(currentDayGregorian, this.selectedStartDate)) {
+                    dayElement.classList.add('start-date', 'selected');
+                }
+                if (this.selectedEndDate && this.isSameDay(currentDayGregorian, this.selectedEndDate)) {
+                    dayElement.classList.add('end-date', 'selected');
+                }
+                if (this.selectedStartDate && this.selectedEndDate && currentDayGregorian > this.selectedStartDate && currentDayGregorian < this.selectedEndDate) {
+                    dayElement.classList.add('in-range');
+                }
+                dayElement.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.selectDate(currentDayGregorian);
+                });
+                gridElement.appendChild(dayElement);
+            }
         }
-        
+        render() {
+            const calendar1 = document.getElementById('calendar1');
+            const calendar2 = document.getElementById('calendar2');
+            this.renderMonth(calendar1, this.displayDate);
+            const nextMonthDate = new Date(this.displayDate);
+            nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+            this.renderMonth(calendar2, nextMonthDate);
+        }
         selectDate(date) {
             if (!this.selectedStartDate || (this.selectedStartDate && this.selectedEndDate)) {
-                if (date < this.today) return; 
+                if (date < this.today) return;
                 this.selectedStartDate = date;
                 this.selectedEndDate = null;
             } else if (date < this.selectedStartDate) {
@@ -389,32 +270,30 @@ document.addEventListener("DOMContentLoaded", function() {
             }
             this.render();
         }
-
-        changeMonth(offset) { this.displayDate.setMonth(this.displayDate.getMonth() + offset); this.render(); }
-        
-        applySelection() { 
-            if (this.selectedStartDate && this.selectedEndDate) { 
-                this.updateDisplayInput(); 
-                this.container.classList.remove('active'); 
-            } else { 
-                alert('لطفا بازه تاریخی را کامل انتخاب کنید (تاریخ شروع و پایان).'); 
-            } 
+        changeMonth(offset) {
+            this.displayDate.setMonth(this.displayDate.getMonth() + offset);
+            this.render();
         }
-        
-        updateDisplayInput() { 
-            const startJalali = this.dateConverter.gregorianToJalali(this.selectedStartDate.getFullYear(), this.selectedStartDate.getMonth() + 1, this.selectedStartDate.getDate()); 
-            const endJalali = this.dateConverter.gregorianToJalali(this.selectedEndDate.getFullYear(), this.selectedEndDate.getMonth() + 1, this.selectedEndDate.getDate()); 
-            const formatJalali = (d) => `${d[0]}-${String(d[1]).padStart(2, '0')}-${String(d[2]).padStart(2, '0')}`; 
-            document.getElementById('daterange-display').value = `${formatJalali(startJalali)}   -   ${formatJalali(endJalali)}`; 
-            document.getElementById('enter_date').value = formatJalali(startJalali); 
-            document.getElementById('exit_date').value = formatJalali(endJalali); 
+        applySelection() {
+            if (this.selectedStartDate && this.selectedEndDate) {
+                this.updateDisplayInput();
+                this.container.classList.remove('active');
+            } else {
+                alert('لطفا بازه تاریخی را کامل انتخاب کنید (تاریخ شروع و پایان).');
+            }
         }
-        
-        isSameDay(d1, d2) { 
-            return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate(); 
+        updateDisplayInput() {
+            const startJalali = this.dateConverter.gregorianToJalali(this.selectedStartDate.getFullYear(), this.selectedStartDate.getMonth() + 1, this.selectedStartDate.getDate());
+            const endJalali = this.dateConverter.gregorianToJalali(this.selectedEndDate.getFullYear(), this.selectedEndDate.getMonth() + 1, this.selectedEndDate.getDate());
+            const formatJalali = (d) => `${d[0]}/${String(d[1]).padStart(2, '0')}/${String(d[2]).padStart(2, '0')}`;
+            document.getElementById('daterange-display').value = `${formatJalali(startJalali)}   -   ${formatJalali(endJalali)}`;
+            document.getElementById('enter_date').value = formatJalali(startJalali);
+            document.getElementById('exit_date').value = formatJalali(endJalali);
+        }
+        isSameDay(d1, d2) {
+            return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
         }
     }
-
     new PersianCalendar();
 });
 </script>
