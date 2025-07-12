@@ -40,8 +40,9 @@
                         </div>
                     </div>
                     <div class="calendar-footer">
+                        <button type="button" class="btn btn-light" id="goToTodayBtn">برو به امروز</button>
+                        <div style="flex-grow: 1;"></div> <button type="button" class="btn btn-secondary" id="cancelBtn">انصراف</button>
                         <button type="button" class="btn btn-success" id="applyBtn">تایید</button>
-                        <button type="button" class="btn btn-secondary" id="cancelBtn">انصراف</button>
                     </div>
                 </div>
             </div>
@@ -74,30 +75,30 @@
 
 {% block scripts %}
 <style>
-    .form-group{margin-bottom:20px}.form-label{display:block;font-weight:600;color:#333;margin-bottom:8px;font-size:14px}.form-control{width:100%;border-radius:15px;border:2px solid #e0e0e0;padding:12px 20px;font-size:16px;transition:all .3s ease;background:white;box-sizing:border-box; font-family: 'Vazirmatn', sans-serif;}.form-control:focus{border-color:#667eea;outline:none;box-shadow:0 0 0 3px rgba(102,126,234,.1);transform:translateY(-2px)}.btn{border-radius:15px;padding:12px 30px;font-weight:600;transition:all .3s ease;border:none;cursor:pointer;font-size:16px;text-decoration:none;display:inline-block;text-align:center}.btn-success{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.btn-success:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(102,126,234,.3)}.btn-secondary{background:#6c757d;color:white}.btn-secondary:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(108,117,125,.3);background:#5a6268}.date-input-wrapper{position:relative}.date-input-wrapper::after{content:'📅';position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:18px}
+    /* ... استایل‌های عمومی بدون تغییر ... */
+    .form-group{margin-bottom:20px}.form-label{display:block;font-weight:600;color:#333;margin-bottom:8px;font-size:14px}.form-control{width:100%;border-radius:15px;border:2px solid #e0e0e0;padding:12px 20px;font-size:16px;transition:all .3s ease;background:white;box-sizing:border-box; font-family: 'Vazirmatn', sans-serif;}.form-control:focus{border-color:#667eea;outline:none;box-shadow:0 0 0 3px rgba(102,126,234,.1);transform:translateY(-2px)}.btn{border-radius:15px;padding:12px 30px;font-weight:600;transition:all .3s ease;border:none;cursor:pointer;font-size:16px;text-decoration:none;display:inline-block;text-align:center; font-family: 'Vazirmatn', sans-serif;}.btn-success{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.btn-success:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(102,126,234,.3)}.btn-secondary{background:#6c757d;color:white}.btn-secondary:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(108,117,125,.3);background:#5a6268}.date-input-wrapper{position:relative}.date-input-wrapper::after{content:'📅';position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:18px}
     
     .persian-calendar {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        z-index: 9999;
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 20px 40px rgba(0,0,0,.2);
-        border: 1px solid #e0e0e0;
-        overflow: hidden;
-        margin-top: 5px;
-        min-width: 600px;
+        display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 9999;
+        background: white; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,.2);
+        border: 1px solid #e0e0e0; overflow: hidden; margin-top: 5px; min-width: 600px;
         font-family: 'Vazirmatn', sans-serif;
     }
     
-    .persian-calendar.active{display:block !important}.calendar-container{display:flex;width:100%}.calendar-month{flex:1;min-width:300px}.calendar-header{padding:15px;text-align:center;font-weight:600;display:flex;align-items:center;justify-content:space-between;background:#f8f9fa;border-bottom:1px solid #e0e0e0}.nav-btn{background:none;border:none;color:#555;font-size:18px;cursor:pointer;padding:8px 12px;border-radius:50%;transition:all .3s ease}.nav-btn:hover{background:rgba(0,0,0,.1)}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#f0f0f0;padding:10px}.calendar-day-header{background:#f8f9fa;padding:10px;text-align:center;font-weight:600;font-size:14px;color:#666}.calendar-day{background:white;padding:10px;text-align:center;cursor:pointer;transition:all .3s ease;font-size:14px;border:none;min-height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px}.calendar-day:hover{background:rgba(102,126,234,.1);transform:scale(1.05)}.calendar-day.other-month{color:#ccc;cursor:default;pointer-events:none}.calendar-day.today{border:2px solid #667eea;font-weight:bold}.calendar-day.selected,.calendar-day.start-date,.calendar-day.end-date{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;font-weight:bold}.calendar-day.in-range{background:rgba(102,126,234,.2);color:#333;border-radius:0}.calendar-day.start-date{border-top-right-radius:8px;border-bottom-right-radius:8px}.calendar-day.end-date{border-top-left-radius:8px;border-bottom-left-radius:8px}.calendar-footer{padding:15px;text-align:center;border-top:1px solid #e0e0e0;background:#f8f9fa}
+    .persian-calendar.active{display:block !important}.calendar-container{display:flex;width:100%}.calendar-month{flex:1;min-width:300px}.calendar-header{padding:15px;text-align:center;font-weight:600;display:flex;align-items:center;justify-content:space-between;background:#f8f9fa;border-bottom:1px solid #e0e0e0}.nav-btn{background:none;border:none;color:#555;font-size:18px;cursor:pointer;padding:8px 12px;border-radius:50%;transition:all .3s ease}.nav-btn:hover{background:rgba(0,0,0,.1)}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#f0f0f0;padding:10px}.calendar-day-header{background:#f8f9fa;padding:10px;text-align:center;font-weight:600;font-size:14px;color:#666}
     
-    /* این خط برای تنظیم فونت دکمه‌های فوتر تقویم اضافه شد */
-    .calendar-footer .btn{margin:0 5px;padding:8px 20px;font-size:14px; font-family: 'Vazirmatn', sans-serif;}
+    /* فونت وزیر به طور مشخص به روزهای ماه اعمال شد */
+    .calendar-day{background:white;padding:10px;text-align:center;cursor:pointer;transition:all .3s ease;font-size:14px;border:none;min-height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px; font-family: 'Vazirmatn', sans-serif;}
 
+    .calendar-day:hover{background:rgba(102,126,234,.1);transform:scale(1.05)}.calendar-day.other-month{color:#ccc;cursor:default;pointer-events:none}.calendar-day.today{border:2px solid #667eea;font-weight:bold}.calendar-day.selected,.calendar-day.start-date,.calendar-day.end-date{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;font-weight:bold}.calendar-day.in-range{background:rgba(102,126,234,.2);color:#333;border-radius:0}.calendar-day.start-date{border-top-right-radius:8px;border-bottom-right-radius:8px}.calendar-day.end-date{border-top-left-radius:8px;border-bottom-left-radius:8px}
+    
+    /* استایل فوتر برای چیدمان دکمه‌ها */
+    .calendar-footer{padding:15px;text-align:center;border-top:1px solid #e0e0e0;background:#f8f9fa; display: flex; align-items: center;}
+
+    .calendar-footer .btn{margin:0 5px;padding:8px 20px;font-size:14px; font-family: 'Vazirmatn', sans-serif;}
+    .calendar-footer .btn-light { background-color: #f8f9fa; color: #0d6efd; border: 1px solid #e0e0e0; }
+    .calendar-footer .btn-light:hover { background-color: #e9ecef; }
+    
     .calendar-day.disabled{color:#ccc;cursor:not-allowed;pointer-events:none;background:#f5f5f5}.calendar-day.disabled:hover{background:#f5f5f5;transform:none}@media (max-width:768px){.calendar-container{flex-direction:column}.calendar-month{min-width:auto}.persian-calendar{min-width:100%}}
 </style>
 
@@ -107,9 +108,7 @@ document.addEventListener("DOMContentLoaded", function() {
         gregorianToJalali(g_y, g_m, g_d) {
             var g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
             var j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-            var gy = g_y - 1600;
-            var gm = g_m - 1;
-            var gd = g_d - 1;
+            var gy = g_y - 1600; var gm = g_m - 1; var gd = g_d - 1;
             var g_day_no = 365 * gy + Math.floor((gy + 3) / 4) - Math.floor((gy + 99) / 100) + Math.floor((gy + 399) / 400);
             for (var j = 0; j < gm; ++j) g_day_no += g_days_in_month[j];
             if (gm > 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) g_day_no++;
@@ -119,10 +118,7 @@ document.addEventListener("DOMContentLoaded", function() {
             j_day_no = j_day_no % 12053;
             var jy = 979 + 33 * j_np + 4 * Math.floor(j_day_no / 1461);
             j_day_no %= 1461;
-            if (j_day_no >= 366) {
-                jy += Math.floor((j_day_no - 1) / 365);
-                j_day_no = (j_day_no - 1) % 365;
-            }
+            if (j_day_no >= 366) { jy += Math.floor((j_day_no - 1) / 365); j_day_no = (j_day_no - 1) % 365; }
             var jm;
             for (var m = 0; m < 11 && j_day_no >= j_days_in_month[m]; ++m) j_day_no -= j_days_in_month[m];
             jm = m + 1;
@@ -132,9 +128,7 @@ document.addEventListener("DOMContentLoaded", function() {
         jalaliToGregorian(j_y, j_m, j_d) {
             var g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
             var j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-            var jy = j_y - 979;
-            var jm = j_m - 1;
-            var jd = j_d - 1;
+            var jy = j_y - 979; var jm = j_m - 1; var jd = j_d - 1;
             var j_day_no = 365 * jy + Math.floor(jy / 33) * 8 + Math.floor((jy % 33 + 3) / 4);
             for (var k = 0; k < jm; ++k) j_day_no += j_days_in_month[k];
             j_day_no += jd;
@@ -142,21 +136,10 @@ document.addEventListener("DOMContentLoaded", function() {
             var gy = 1600 + 400 * Math.floor(g_day_no / 146097);
             g_day_no = g_day_no % 146097;
             var leap = true;
-            if (g_day_no >= 36525) {
-                g_day_no--;
-                gy += 100 * Math.floor(g_day_no / 36524);
-                g_day_no = g_day_no % 36524;
-                if (g_day_no >= 365) g_day_no++;
-                else leap = false;
-            }
+            if (g_day_no >= 36525) { g_day_no--; gy += 100 * Math.floor(g_day_no / 36524); g_day_no = g_day_no % 36524; if (g_day_no >= 365) g_day_no++; else leap = false; }
             gy += 4 * Math.floor(g_day_no / 1461);
             g_day_no %= 1461;
-            if (g_day_no >= 366) {
-                leap = false;
-                g_day_no--;
-                gy += Math.floor(g_day_no / 365);
-                g_day_no = g_day_no % 365;
-            }
+            if (g_day_no >= 366) { leap = false; g_day_no--; gy += Math.floor(g_day_no / 365); g_day_no = g_day_no % 365; }
             let idx;
             for (idx = 0; g_day_no >= g_days_in_month[idx] + (idx === 1 && leap); idx++) g_day_no -= g_days_in_month[idx] + (idx === 1 && leap);
             var gm = idx + 1;
@@ -179,12 +162,9 @@ document.addEventListener("DOMContentLoaded", function() {
             this.init();
         }
         
-        // تابع جدید برای تبدیل اعداد به فارسی
         toPersianDigits(str) {
             const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-            return String(str).replace(/[0-9]/g, function(w) {
-                return persianDigits[+w];
-            });
+            return String(str).replace(/[0-9]/g, function(w) { return persianDigits[+w]; });
         }
 
         isPersianLeapYear(year) {
@@ -196,9 +176,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const exitDateVal = document.getElementById('exit_date').value;
             if (enterDateVal) {
                 this.selectedStartDate = this.parseDate(enterDateVal);
-                if (this.selectedStartDate < this.today) {
-                    this.displayDate = new Date(this.selectedStartDate);
-                }
+                if (this.selectedStartDate < this.today) { this.displayDate = new Date(this.selectedStartDate); }
             }
             if (exitDateVal) { this.selectedEndDate = this.parseDate(exitDateVal); }
             this.bindEvents();
@@ -220,11 +198,20 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
             document.getElementById('applyBtn').addEventListener('click', () => this.applySelection());
             document.getElementById('cancelBtn').addEventListener('click', () => this.container.classList.remove('active'));
+            // رویداد برای دکمه جدید "برو به امروز"
+            document.getElementById('goToTodayBtn').addEventListener('click', () => this.selectToday());
+        }
+        
+        // تابع جدید برای انتخاب تاریخ امروز
+        selectToday() {
+            this.displayDate = new Date(this.today);
+            this.selectedStartDate = this.today;
+            this.selectedEndDate = this.today;
+            this.render();
         }
 
         renderMonth(element, date) {
             const [jy, jm] = this.dateConverter.gregorianToJalali(date.getFullYear(), date.getMonth() + 1, date.getDate());
-            // استفاده از تابع تبدیل اعداد برای نمایش سال به فارسی
             element.querySelector('.calendar-header span').textContent = `${this.persianMonths[jm - 1]} ${this.toPersianDigits(jy)}`;
             const gridElement = element.querySelector('.calendar-grid');
             gridElement.innerHTML = '';
@@ -242,7 +229,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 const dayElement = document.createElement('button');
                 dayElement.type = 'button';
                 dayElement.className = 'calendar-day';
-                // استفاده از تابع تبدیل اعداد برای نمایش روزهای ماه به فارسی
                 dayElement.textContent = this.toPersianDigits(day);
                 const currentDayGregorian = this.dateConverter.jalaliToGregorian(jy, jm, day);
                 if (currentDayGregorian < this.today) { dayElement.classList.add('disabled'); }
@@ -271,9 +257,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (date < this.today) return;
                 this.selectedEndDate = this.selectedStartDate;
                 this.selectedStartDate = date;
-            } else {
-                this.selectedEndDate = date;
-            }
+            } else { this.selectedEndDate = date; }
             this.render();
         }
         changeMonth(offset) {
@@ -284,9 +268,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (this.selectedStartDate && this.selectedEndDate) {
                 this.updateDisplayInput();
                 this.container.classList.remove('active');
-            } else {
-                alert('لطفا بازه تاریخی را کامل انتخاب کنید (تاریخ شروع و پایان).');
-            }
+            } else { alert('لطفا بازه تاریخی را کامل انتخاب کنید (تاریخ شروع و پایان).'); }
         }
         updateDisplayInput() {
             const startJalali = this.dateConverter.gregorianToJalali(this.selectedStartDate.getFullYear(), this.selectedStartDate.getMonth() + 1, this.selectedStartDate.getDate());
