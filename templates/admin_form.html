@@ -19,7 +19,8 @@
             <div class="form-group" style="position: relative;">
                 <label class="form-label">بازه تاریخی ماموریت (ورود و خروج):</label>
                 <div class="date-input-wrapper">
-                    <input type="text" id="daterange-display" class="form-control text-center" placeholder="برای انتخاب تاریخ کلیک کنید" readonly>
+                    <input type="text" id="daterange-display" class="form-control text-center" placeholder="برای انتخاب تاریخ کلیک کنید یا تاریخ را وارد کنید (مثال: 1403/05/15 - 1403/05/20)">
+                    <div class="input-help-text">می‌توانید تاریخ را به صورت دستی وارد کنید یا از تقویم استفاده کنید</div>
                 </div>
                 
                 <div class="persian-calendar" id="persianCalendar">
@@ -41,7 +42,8 @@
                     </div>
                     <div class="calendar-footer">
                         <button type="button" class="btn btn-light" id="goToTodayBtn">برو به امروز</button>
-                        <div style="flex-grow: 1;"></div> <button type="button" class="btn btn-secondary" id="cancelBtn">انصراف</button>
+                        <div style="flex-grow: 1;"></div> 
+                        <button type="button" class="btn btn-secondary" id="cancelBtn">انصراف</button>
                         <button type="button" class="btn btn-success" id="applyBtn">تایید</button>
                     </div>
                 </div>
@@ -72,11 +74,15 @@
 </div>
 {% endblock %}
 
-
 {% block scripts %}
 <style>
-    /* ... استایل‌های عمومی بدون تغییر ... */
     .form-group{margin-bottom:20px}.form-label{display:block;font-weight:600;color:#333;margin-bottom:8px;font-size:14px}.form-control{width:100%;border-radius:15px;border:2px solid #e0e0e0;padding:12px 20px;font-size:16px;transition:all .3s ease;background:white;box-sizing:border-box; font-family: 'Vazirmatn', sans-serif;}.form-control:focus{border-color:#667eea;outline:none;box-shadow:0 0 0 3px rgba(102,126,234,.1);transform:translateY(-2px)}.btn{border-radius:15px;padding:12px 30px;font-weight:600;transition:all .3s ease;border:none;cursor:pointer;font-size:16px;text-decoration:none;display:inline-block;text-align:center; font-family: 'Vazirmatn', sans-serif;}.btn-success{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}.btn-success:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(102,126,234,.3)}.btn-secondary{background:#6c757d;color:white}.btn-secondary:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(108,117,125,.3);background:#5a6268}.date-input-wrapper{position:relative}.date-input-wrapper::after{content:'📅';position:absolute;left:15px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:18px}
+    
+    .input-help-text{font-size:12px;color:#666;margin-top:5px;font-style:italic}
+    
+    .form-control.error{border-color:#dc3545;background-color:#fff5f5}
+    
+    .error-message{color:#dc3545;font-size:12px;margin-top:5px;display:none}
     
     .persian-calendar {
         display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 9999;
@@ -87,12 +93,10 @@
     
     .persian-calendar.active{display:block !important}.calendar-container{display:flex;width:100%}.calendar-month{flex:1;min-width:300px}.calendar-header{padding:15px;text-align:center;font-weight:600;display:flex;align-items:center;justify-content:space-between;background:#f8f9fa;border-bottom:1px solid #e0e0e0}.nav-btn{background:none;border:none;color:#555;font-size:18px;cursor:pointer;padding:8px 12px;border-radius:50%;transition:all .3s ease}.nav-btn:hover{background:rgba(0,0,0,.1)}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#f0f0f0;padding:10px}.calendar-day-header{background:#f8f9fa;padding:10px;text-align:center;font-weight:600;font-size:14px;color:#666}
     
-    /* فونت وزیر به طور مشخص به روزهای ماه اعمال شد */
     .calendar-day{background:white;padding:10px;text-align:center;cursor:pointer;transition:all .3s ease;font-size:14px;border:none;min-height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px; font-family: 'Vazirmatn', sans-serif;}
 
     .calendar-day:hover{background:rgba(102,126,234,.1);transform:scale(1.05)}.calendar-day.other-month{color:#ccc;cursor:default;pointer-events:none}.calendar-day.today{border:2px solid #667eea;font-weight:bold}.calendar-day.selected,.calendar-day.start-date,.calendar-day.end-date{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;font-weight:bold}.calendar-day.in-range{background:rgba(102,126,234,.2);color:#333;border-radius:0}.calendar-day.start-date{border-top-right-radius:8px;border-bottom-right-radius:8px}.calendar-day.end-date{border-top-left-radius:8px;border-bottom-left-radius:8px}
     
-    /* استایل فوتر برای چیدمان دکمه‌ها */
     .calendar-footer{padding:15px;text-align:center;border-top:1px solid #e0e0e0;background:#f8f9fa; display: flex; align-items: center;}
 
     .calendar-footer .btn{margin:0 5px;padding:8px 20px;font-size:14px; font-family: 'Vazirmatn', sans-serif;}
@@ -125,6 +129,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var jd = j_day_no + 1;
             return [jy, jm, jd];
         }
+        
         jalaliToGregorian(j_y, j_m, j_d) {
             var g_days_in_month = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
             var j_days_in_month = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
@@ -146,6 +151,23 @@ document.addEventListener("DOMContentLoaded", function() {
             var gd = g_day_no + 1;
             return new Date(gy, gm - 1, gd);
         }
+        
+        // تبدیل اعداد فارسی به انگلیسی
+        toEnglishDigits(str) {
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            let result = str;
+            for (let i = 0; i < persianDigits.length; i++) {
+                result = result.replace(new RegExp(persianDigits[i], 'g'), englishDigits[i]);
+            }
+            return result;
+        }
+        
+        // تبدیل اعداد انگلیسی به فارسی
+        toPersianDigits(str) {
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            return String(str).replace(/[0-9]/g, function(w) { return persianDigits[+w]; });
+        }
     }
 
     class PersianCalendar {
@@ -159,6 +181,7 @@ document.addEventListener("DOMContentLoaded", function() {
             this.displayDate = new Date(this.today);
             this.selectedStartDate = null;
             this.selectedEndDate = null;
+            this.isManualInput = false;
             this.init();
         }
         
@@ -189,20 +212,166 @@ document.addEventListener("DOMContentLoaded", function() {
             return this.dateConverter.jalaliToGregorian(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
         }
 
+        // اعتبارسنجی تاریخ فارسی
+        validatePersianDate(year, month, day) {
+            if (year < 1300 || year > 1500) return false;
+            if (month < 1 || month > 12) return false;
+            
+            let maxDay;
+            if (month <= 6) {
+                maxDay = 31;
+            } else if (month <= 11) {
+                maxDay = 30;
+            } else {
+                maxDay = this.isPersianLeapYear(year) ? 30 : 29;
+            }
+            
+            if (day < 1 || day > maxDay) return false;
+            return true;
+        }
+
+        // پارس کردن ورودی دستی
+        parseManualInput(inputValue) {
+            const cleanValue = this.dateConverter.toEnglishDigits(inputValue.trim());
+            
+            // الگوهای مختلف برای تاریخ
+            const patterns = [
+                /^(\d{4})\/(\d{1,2})\/(\d{1,2})\s*-\s*(\d{4})\/(\d{1,2})\/(\d{1,2})$/,
+                /^(\d{4})\/(\d{1,2})\/(\d{1,2})\s*تا\s*(\d{4})\/(\d{1,2})\/(\d{1,2})$/,
+                /^(\d{4})\/(\d{1,2})\/(\d{1,2})\s*الی\s*(\d{4})\/(\d{1,2})\/(\d{1,2})$/
+            ];
+            
+            for (let pattern of patterns) {
+                const match = cleanValue.match(pattern);
+                if (match) {
+                    const startYear = parseInt(match[1]);
+                    const startMonth = parseInt(match[2]);
+                    const startDay = parseInt(match[3]);
+                    const endYear = parseInt(match[4]);
+                    const endMonth = parseInt(match[5]);
+                    const endDay = parseInt(match[6]);
+                    
+                    if (this.validatePersianDate(startYear, startMonth, startDay) && 
+                        this.validatePersianDate(endYear, endMonth, endDay)) {
+                        
+                        const startDate = this.dateConverter.jalaliToGregorian(startYear, startMonth, startDay);
+                        const endDate = this.dateConverter.jalaliToGregorian(endYear, endMonth, endDay);
+                        
+                        if (startDate <= endDate) {
+                            return { startDate, endDate };
+                        }
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        // نمایش پیام خطا
+        showError(message) {
+            const displayInput = document.getElementById('daterange-display');
+            displayInput.classList.add('error');
+            
+            let errorDiv = document.querySelector('.error-message');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                displayInput.parentNode.appendChild(errorDiv);
+            }
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                displayInput.classList.remove('error');
+                errorDiv.style.display = 'none';
+            }, 4000);
+        }
+
+        // پاک کردن خطا
+        clearError() {
+            const displayInput = document.getElementById('daterange-display');
+            displayInput.classList.remove('error');
+            const errorDiv = document.querySelector('.error-message');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+        }
+
         bindEvents() {
             const displayInput = document.getElementById('daterange-display');
-            displayInput.addEventListener('click', (e) => { e.stopPropagation(); this.container.classList.add('active'); });
-            document.addEventListener('click', (e) => { if (!this.container.contains(e.target) && !displayInput.contains(e.target)) { this.container.classList.remove('active'); } });
+            
+            // رویداد کلیک برای نمایش تقویم
+            displayInput.addEventListener('click', (e) => { 
+                e.stopPropagation(); 
+                this.container.classList.add('active'); 
+            });
+            
+            // رویداد تغییر متن برای ورودی دستی
+            displayInput.addEventListener('input', (e) => {
+                this.isManualInput = true;
+                this.clearError();
+            });
+            
+            // رویداد فشردن کلید برای پردازش ورودی دستی
+            displayInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.processManualInput();
+                }
+            });
+            
+            // رویداد از دست دادن فوکوس برای پردازش ورودی دستی
+            displayInput.addEventListener('blur', (e) => {
+                if (this.isManualInput) {
+                    this.processManualInput();
+                }
+            });
+            
+            document.addEventListener('click', (e) => { 
+                if (!this.container.contains(e.target) && !displayInput.contains(e.target)) { 
+                    this.container.classList.remove('active'); 
+                } 
+            });
+            
             this.container.addEventListener('click', (e) => { e.stopPropagation(); });
             document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
             document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
             document.getElementById('applyBtn').addEventListener('click', () => this.applySelection());
             document.getElementById('cancelBtn').addEventListener('click', () => this.container.classList.remove('active'));
-            // رویداد برای دکمه جدید "برو به امروز"
             document.getElementById('goToTodayBtn').addEventListener('click', () => this.selectToday());
         }
         
-        // تابع جدید برای انتخاب تاریخ امروز
+        // پردازش ورودی دستی
+        processManualInput() {
+            const displayInput = document.getElementById('daterange-display');
+            const inputValue = displayInput.value.trim();
+            
+            if (!inputValue) {
+                this.selectedStartDate = null;
+                this.selectedEndDate = null;
+                document.getElementById('enter_date').value = '';
+                document.getElementById('exit_date').value = '';
+                this.isManualInput = false;
+                return;
+            }
+            
+            const parsed = this.parseManualInput(inputValue);
+            if (parsed) {
+                if (parsed.startDate < this.today) {
+                    this.showError('تاریخ شروع نمی‌تواند قبل از امروز باشد');
+                    return;
+                }
+                
+                this.selectedStartDate = parsed.startDate;
+                this.selectedEndDate = parsed.endDate;
+                this.updateDisplayInput();
+                this.displayDate = new Date(this.selectedStartDate);
+                this.render();
+                this.isManualInput = false;
+            } else {
+                this.showError('فرمت تاریخ اشتباه است. مثال صحیح: 1403/05/15 - 1403/05/20');
+            }
+        }
+        
         selectToday() {
             this.displayDate = new Date(this.today);
             this.selectedStartDate = this.today;
@@ -236,10 +405,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (this.selectedStartDate && this.isSameDay(currentDayGregorian, this.selectedStartDate)) { dayElement.classList.add('start-date', 'selected'); }
                 if (this.selectedEndDate && this.isSameDay(currentDayGregorian, this.selectedEndDate)) { dayElement.classList.add('end-date', 'selected'); }
                 if (this.selectedStartDate && this.selectedEndDate && currentDayGregorian > this.selectedStartDate && currentDayGregorian < this.selectedEndDate) { dayElement.classList.add('in-range'); }
-                dayElement.addEventListener('click', (e) => { e.stopPropagation(); this.selectDate(currentDayGregorian); });
+                dayElement.addEventListener('click', (e) => { 
+                    e.stopPropagation(); 
+                    this.selectDate(currentDayGregorian);
+                    this.isManualInput = false;
+                });
                 gridElement.appendChild(dayElement);
             }
         }
+        
         render() {
             const calendar1 = document.getElementById('calendar1');
             const calendar2 = document.getElementById('calendar2');
@@ -248,6 +422,7 @@ document.addEventListener("DOMContentLoaded", function() {
             nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
             this.renderMonth(calendar2, nextMonthDate);
         }
+        
         selectDate(date) {
             if (!this.selectedStartDate || (this.selectedStartDate && this.selectedEndDate)) {
                 if (date < this.today) return;
@@ -260,16 +435,19 @@ document.addEventListener("DOMContentLoaded", function() {
             } else { this.selectedEndDate = date; }
             this.render();
         }
+        
         changeMonth(offset) {
             this.displayDate.setMonth(this.displayDate.getMonth() + offset);
             this.render();
         }
+        
         applySelection() {
             if (this.selectedStartDate && this.selectedEndDate) {
                 this.updateDisplayInput();
                 this.container.classList.remove('active');
             } else { alert('لطفا بازه تاریخی را کامل انتخاب کنید (تاریخ شروع و پایان).'); }
         }
+        
         updateDisplayInput() {
             const startJalali = this.dateConverter.gregorianToJalali(this.selectedStartDate.getFullYear(), this.selectedStartDate.getMonth() + 1, this.selectedStartDate.getDate());
             const endJalali = this.dateConverter.gregorianToJalali(this.selectedEndDate.getFullYear(), this.selectedEndDate.getMonth() + 1, this.selectedEndDate.getDate());
@@ -279,6 +457,7 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('enter_date').value = formatForStorage(startJalali);
             document.getElementById('exit_date').value = formatForStorage(endJalali);
         }
+        
         isSameDay(d1, d2) {
             return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
         }
