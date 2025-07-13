@@ -2,11 +2,13 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for, a
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
+import requests
 
 app = Flask(__name__)
 
-# متغیر محیطی DATABASE_URL باید در محیط رندر تنظیم شده باشد
 DATABASE_URL = os.environ.get("DATABASE_URL")
+BALE_TOKEN = "6616020:CAwP1U9uX7ibGLXM17Cb9BztVy97pZUUXnDWvIjX"
+BALE_API_URL = f"https://api.bale.ai/bot{BALE_TOKEN}/sendMessage"
 
 def get_connection():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
@@ -106,19 +108,14 @@ def bot_webhook():
             message = data.get("message", {})
             text = message.get("text", "").strip()
             chat_id = message.get("chat", {}).get("id")
+
             if not chat_id:
                 return jsonify({"status": "error", "message": "chat_id not found"})
 
             if text == "/start":
-                # پاسخ به دستور استارت بات
-                return jsonify({
-                    "status": "ok",
-                    "message": {
-                        "text": "سلام! خوش آمدید به بات ما. لطفا کد ملی خود را ارسال کنید."
-                    }
-                })
+                send_message(chat_id, "سلام! کد ملی خود را ارسال کنید.")
+                return jsonify({"status": "ok"})
 
-            # جستجو در دیتابیس بر اساس کد ملی وارد شده
             conn = get_connection()
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM rahnama WHERE guide_national_id = %s ORDER BY enter_date DESC LIMIT 1", (text,))
@@ -127,32 +124,25 @@ def bot_webhook():
             conn.close()
 
             if not rahnama_row:
-                return jsonify({
-                    "status": "ok",
-                    "message": {"text": "کد ملی یافت نشد. لطفا دوباره تلاش کنید."}
-                })
+                send_message(chat_id, "کد ملی یافت نشد.")
+            else:
+                response_text = f"نام مدیر: {rahnama_row['guide_name']}\nهتل: {rahnama_row['hotel_name']}\nمدیر ثابت: {rahnama_row['fixed_manager_name']}\nورود: {rahnama_row['enter_date']}\nخروج: {rahnama_row['exit_date']}"
+                send_message(chat_id, response_text)
 
-            # ارسال اطلاعات به صورت پیام متنی
-            response_text = (
-                f"اطلاعات شما:\n"
-                f"نام مدیر راهنما: {rahnama_row['guide_name']}\n"
-                f"هتل: {rahnama_row['hotel_name']}\n"
-                f"تاریخ ورود: {rahnama_row['enter_date']}\n"
-                f"تاریخ خروج: {rahnama_row['exit_date']}\n"
-                f"شهر: {rahnama_row['city']}\n"
-                f"مدیر ثابت: {rahnama_row['fixed_manager_name']}"
-            )
-
-            return jsonify({
-                "status": "ok",
-                "message": {
-                    "text": response_text
-                }
-            })
-
+            return jsonify({"status": "ok"})
         return jsonify({"status": "ok"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+def send_message(chat_id, text):
+    payload = {
+        "chat_id": chat_id,
+        "text": text
+    }
+    try:
+        requests.post(BALE_API_URL, json=payload, timeout=5)
+    except requests.exceptions.RequestException as e:
+        print(f"خطا در ارسال پیام به بله: {e}")
 
 @app.route("/")
 def index():
