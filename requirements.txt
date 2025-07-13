@@ -5,3 +5,4 @@ pandas
 openpyxl
 jdatetime
 Flask-Admin
+psycopg2-binary
