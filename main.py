@@ -2,14 +2,13 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for, a
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
-import requests
+import requests  # حتما نصب و ایمپورت باشد
 
 app = Flask(__name__)
 
-# توکن بات بله خودت را اینجا بگذار
+# توکن بات بله را اینجا وارد کن
 BOT_API_TOKEN = "6616020:CAwP1U9uX7ibGLXM17Cb9BztVy97pZUUXnDWvIjX"
 
-# متغیر محیطی DATABASE_URL باید در محیط رندر تنظیم شده باشد
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 def get_connection():
@@ -26,8 +25,14 @@ def send_message(chat_id, text):
         "chat_id": chat_id,
         "text": text
     }
-    response = requests.post(url, headers=headers, json=data)
-    return response.json()
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+        print(f"پیام با موفقیت ارسال شد به chat_id={chat_id}")
+        return response.json()
+    except Exception as e:
+        print(f"خطا در ارسال پیام به بله: {e}")
+        return None
 
 @app.route("/admin")
 def admin_index():
@@ -119,28 +124,44 @@ def admin_delete(id):
 def bot_webhook():
     try:
         data = request.json
-        if not data:
-            return jsonify({"status": "no data"})
-
         print("داده دریافتی از بله:", data)
 
         if "message" in data:
-            message = data["message"]
+            message = data.get("message", {})
             text = message.get("text", "").strip()
             chat_id = message.get("chat", {}).get("id")
 
             if not chat_id:
+                print("chat_id یافت نشد")
                 return jsonify({"status": "error", "message": "chat_id not found"})
 
+            # پاسخ به دستور /start
             if text == "/start":
-                send_message(chat_id, "سلام! ربات شما آماده است. خوش آمدید!")
+                result = send_message(chat_id, "سلام! ربات شما آماده است. خوش آمدید!")
+                print("نتیجه ارسال پیام:", result)
                 return jsonify({"status": "ok", "message": "start handled"})
 
-            # سایر دستورات یا پاسخ‌ها می‌توانند اینجا اضافه شوند
+            # پاسخ به کد ملی (10 رقم)
+            if text.isdigit() and len(text) == 10:
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM rahnama WHERE guide_national_id = %s ORDER BY enter_date DESC LIMIT 1", (text,))
+                rahnama_row = cursor.fetchone()
+                cursor.close()
+                conn.close()
+                if not rahnama_row:
+                    send_message(chat_id, "کد ملی یافت نشد.")
+                    return jsonify({"status": "ok", "message": "not found"})
+                # ارسال اطلاعات به صورت پیام متنی ساده (می‌توانید قالب پیام را به دلخواه تغییر دهید)
+                msg = f"اطلاعات ماموریت:\nنام مدیر راهنما: {rahnama_row['guide_name']}\nهتل: {rahnama_row['hotel_name']}\nمدیر ثابت: {rahnama_row['fixed_manager_name']}\nتاریخ ورود: {rahnama_row['enter_date']}\nتاریخ خروج: {rahnama_row['exit_date']}"
+                send_message(chat_id, msg)
+                return jsonify({"status": "ok", "message": "info sent"})
 
-        return jsonify({"status": "ok", "echo": data})
-
+            # اگر پیام دیگری بود
+            return jsonify({"status": "ok", "message": "message received"})
+        return jsonify({"status": "ok"})
     except Exception as e:
+        print(f"خطا در webhook بات: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/")
