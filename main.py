@@ -1,49 +1,16 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, abort
 import psycopg2
 from psycopg2.extras import RealDictCursor
-import json
-import jdatetime
-import datetime
 import os
 
 app = Flask(__name__)
-@app.route("/init-db-manual")
-def init_db_manual():
-    try:
-        init_database()
-        return "✅ Database initialized."
-    except Exception as e:
-        return f"❌ Error initializing database: {e}"
 
-# اتصال به دیتابیس PostgreSQL از طریق متغیر محیطی
+# متغیر محیطی DATABASE_URL باید در محیط رندر تنظیم شده باشد
 DATABASE_URL = os.environ.get("DATABASE_URL")
-
 
 def get_connection():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
-
-
-def init_database():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS rahnama (
-            id SERIAL PRIMARY KEY,
-            guide_name TEXT NOT NULL,
-            guide_national_id TEXT NOT NULL,
-            enter_date TEXT NOT NULL,
-            exit_date TEXT NOT NULL,
-            city TEXT NOT NULL,
-            hotel_name TEXT NOT NULL,
-            fixed_manager_name TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    conn.commit()
-    cursor.close()
-    conn.close()
-
 
 @app.route("/admin")
 def admin_index():
@@ -58,22 +25,18 @@ def admin_index():
     except Exception as e:
         return f"خطا در نمایش لیست: {e}", 500
 
-
-@app.route("/admin/add", methods=("GET", "POST"))
+@app.route("/admin/add", methods=["GET", "POST"])
 def admin_add():
     if request.method == "POST":
         try:
             form_data = {k: request.form.get(k, "").strip() for k in [
                 "guide_name", "guide_national_id", "enter_date", "exit_date",
                 "city", "hotel_name", "fixed_manager_name"]}
-
             for key, value in form_data.items():
                 if not value:
                     return f"خطا: فیلد {key} الزامی است و نمی‌تواند خالی باشد.", 400
-
             if not form_data['guide_national_id'].isdigit() or len(form_data['guide_national_id']) != 10:
                 return "خطا: کد ملی باید 10 رقم باشد.", 400
-
             conn = get_connection()
             cursor = conn.cursor()
             cursor.execute('''
@@ -88,6 +51,52 @@ def admin_add():
             return f"خطا در ذخیره داده‌ها: {str(e)}", 500
     return render_template("admin_form.html", assignment=None)
 
+@app.route("/admin/edit/<int:id>", methods=["GET", "POST"])
+def admin_edit(id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    if request.method == "POST":
+        guide_name = request.form.get("guide_name", "").strip()
+        guide_national_id = request.form.get("guide_national_id", "").strip()
+        enter_date = request.form.get("enter_date", "").strip()
+        exit_date = request.form.get("exit_date", "").strip()
+        city = request.form.get("city", "").strip()
+        hotel_name = request.form.get("hotel_name", "").strip()
+        fixed_manager_name = request.form.get("fixed_manager_name", "").strip()
+
+        cursor.execute('''
+            UPDATE rahnama SET
+                guide_name=%s,
+                guide_national_id=%s,
+                enter_date=%s,
+                exit_date=%s,
+                city=%s,
+                hotel_name=%s,
+                fixed_manager_name=%s
+            WHERE id=%s
+        ''', (guide_name, guide_national_id, enter_date, exit_date, city, hotel_name, fixed_manager_name, id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return redirect(url_for("admin_index"))
+    else:
+        cursor.execute("SELECT * FROM rahnama WHERE id=%s", (id,))
+        assignment = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        if assignment is None:
+            abort(404)
+        return render_template("admin_form.html", assignment=assignment)
+
+@app.route("/admin/delete/<int:id>", methods=["POST"])
+def admin_delete(id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM rahnama WHERE id=%s", (id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for("admin_index"))
 
 @app.route("/bot", methods=["POST"])
 def bot_webhook():
@@ -112,12 +121,9 @@ def bot_webhook():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-
 @app.route("/")
 def index():
     return redirect(url_for("admin_index"))
 
-
 if __name__ == "__main__":
-    init_database()
     app.run(host="0.0.0.0", port=10000, debug=True)
