@@ -7,6 +7,13 @@ import datetime
 import os
 
 app = Flask(__name__)
+@app.route("/init-db-manual")
+def init_db_manual():
+    try:
+        init_database()
+        return "✅ Database initialized."
+    except Exception as e:
+        return f"❌ Error initializing database: {e}"
 
 # اتصال به دیتابیس PostgreSQL از طریق متغیر محیطی
 DATABASE_URL = os.environ.get("DATABASE_URL")
