@@ -211,7 +211,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const parts = dateStr.split('/');
             return this.dateConverter.jalaliToGregorian(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
         }
-
+        
         // اعتبارسنجی تاریخ فارسی
         validatePersianDate(year, month, day) {
             if (year < 1300 || year > 1500) return false;
