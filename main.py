@@ -108,15 +108,48 @@ def bot_webhook():
             chat_id = message.get("chat", {}).get("id")
             if not chat_id:
                 return jsonify({"status": "error", "message": "chat_id not found"})
+
+            if text == "/start":
+                # پاسخ به دستور استارت بات
+                return jsonify({
+                    "status": "ok",
+                    "message": {
+                        "text": "سلام! خوش آمدید به بات ما. لطفا کد ملی خود را ارسال کنید."
+                    }
+                })
+
+            # جستجو در دیتابیس بر اساس کد ملی وارد شده
             conn = get_connection()
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM rahnama WHERE guide_national_id = %s ORDER BY enter_date DESC LIMIT 1", (text,))
             rahnama_row = cursor.fetchone()
             cursor.close()
             conn.close()
+
             if not rahnama_row:
-                return jsonify({"message": "کد ملی یافت نشد."})
-            return jsonify(rahnama_row)
+                return jsonify({
+                    "status": "ok",
+                    "message": {"text": "کد ملی یافت نشد. لطفا دوباره تلاش کنید."}
+                })
+
+            # ارسال اطلاعات به صورت پیام متنی
+            response_text = (
+                f"اطلاعات شما:\n"
+                f"نام مدیر راهنما: {rahnama_row['guide_name']}\n"
+                f"هتل: {rahnama_row['hotel_name']}\n"
+                f"تاریخ ورود: {rahnama_row['enter_date']}\n"
+                f"تاریخ خروج: {rahnama_row['exit_date']}\n"
+                f"شهر: {rahnama_row['city']}\n"
+                f"مدیر ثابت: {rahnama_row['fixed_manager_name']}"
+            )
+
+            return jsonify({
+                "status": "ok",
+                "message": {
+                    "text": response_text
+                }
+            })
+
         return jsonify({"status": "ok"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
