@@ -8,10 +8,14 @@ import os
 
 app = Flask(__name__)
 
+# اتصال به دیتابیس PostgreSQL از طریق متغیر محیطی
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+
 def get_connection():
-    DATABASE_URL = os.environ.get("DATABASE_URL")
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
+
 
 def init_database():
     conn = get_connection()
@@ -33,60 +37,50 @@ def init_database():
     cursor.close()
     conn.close()
 
-@app.route('/admin')
+
+@app.route("/admin")
 def admin_index():
     try:
         conn = get_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM rahnama ORDER BY id DESC')
+        cursor.execute("SELECT * FROM rahnama ORDER BY id DESC")
         assignments = cursor.fetchall()
         cursor.close()
         conn.close()
-        return render_template('admin_index.html', assignments=assignments)
+        return render_template("admin_index.html", assignments=assignments)
     except Exception as e:
         return f"خطا در نمایش لیست: {e}", 500
 
-@app.route('/admin/add', methods=('GET', 'POST'))
+
+@app.route("/admin/add", methods=("GET", "POST"))
 def admin_add():
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            guide_name = request.form.get('guide_name', '').strip()
-            guide_national_id = request.form.get('guide_national_id', '').strip()
-            enter_date = request.form.get('enter_date', '').strip()
-            exit_date = request.form.get('exit_date', '').strip()
-            city = request.form.get('city', '').strip()
-            hotel_name = request.form.get('hotel_name', '').strip()
-            fixed_manager_name = request.form.get('fixed_manager_name', '').strip()
-            
-            required_fields = {
-                'guide_name': guide_name,
-                'guide_national_id': guide_national_id,
-                'enter_date': enter_date,
-                'exit_date': exit_date,
-                'city': city,
-                'hotel_name': hotel_name,
-                'fixed_manager_name': fixed_manager_name
-            }
-            for field_name, field_value in required_fields.items():
-                if not field_value:
-                    return f"خطا: فیلد {field_name} الزامی است و نمی‌تواند خالی باشد.", 400
-            
-            if not guide_national_id.isdigit() or len(guide_national_id) != 10:
+            form_data = {k: request.form.get(k, "").strip() for k in [
+                "guide_name", "guide_national_id", "enter_date", "exit_date",
+                "city", "hotel_name", "fixed_manager_name"]}
+
+            for key, value in form_data.items():
+                if not value:
+                    return f"خطا: فیلد {key} الزامی است و نمی‌تواند خالی باشد.", 400
+
+            if not form_data['guide_national_id'].isdigit() or len(form_data['guide_national_id']) != 10:
                 return "خطا: کد ملی باید 10 رقم باشد.", 400
-            
+
             conn = get_connection()
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO rahnama (guide_name, guide_national_id, enter_date, exit_date, city, hotel_name, fixed_manager_name)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ''', (guide_name, guide_national_id, enter_date, exit_date, city, hotel_name, fixed_manager_name))
+            ''', tuple(form_data.values()))
             conn.commit()
             cursor.close()
             conn.close()
-            return redirect(url_for('admin_index'))
+            return redirect(url_for("admin_index"))
         except Exception as e:
             return f"خطا در ذخیره داده‌ها: {str(e)}", 500
-    return render_template('admin_form.html', assignment=None)
+    return render_template("admin_form.html", assignment=None)
+
 
 @app.route("/bot", methods=["POST"])
 def bot_webhook():
@@ -98,8 +92,6 @@ def bot_webhook():
             chat_id = message.get("chat", {}).get("id")
             if not chat_id:
                 return jsonify({"status": "error", "message": "chat_id not found"})
-            if text == "/start":
-                return jsonify({"message": "Bot started."})
             conn = get_connection()
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM rahnama WHERE guide_national_id = %s ORDER BY enter_date DESC LIMIT 1", (text,))
@@ -113,9 +105,11 @@ def bot_webhook():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/')
+
+@app.route("/")
 def index():
-    return redirect(url_for('admin_index'))
+    return redirect(url_for("admin_index"))
+
 
 if __name__ == "__main__":
     init_database()
